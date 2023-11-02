@@ -16,7 +16,7 @@ namespace QuestionAppLibrary.DataAccess
         public async Task<List<StatusModel>> GetAllStatuses()
         {
             var output = _cache.Get<List<StatusModel>>(CacheName);
-            if (output is not null)
+            if (output != null && output.Any())
                 return output;
 
             var results = await _statuses.FindAsync(_ => true);
