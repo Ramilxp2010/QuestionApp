@@ -16,7 +16,7 @@ namespace QuestionAppLibrary.DataAccess
         public async Task<List<CategoryModel>> GetAllCategoies()
         {
             var output = _cache.Get<List<CategoryModel>>(CacheName);
-            if (output is not null)
+            if (output != null && output.Any())
                 return output;
 
             var results = await _categories.FindAsync(_ => true);

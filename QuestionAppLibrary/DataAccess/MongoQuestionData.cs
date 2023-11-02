@@ -21,7 +21,7 @@ namespace QuestionAppLibrary.DataAccess
         public async Task<List<QuestionModel>> GetAllQuestions()
         {
             var output = _cache.Get<List<QuestionModel>>(CacheName);
-            if (output is not null)
+            if (output != null && output.Any())
                 return output;
 
             var results = await _questions.FindAsync(_ => true);

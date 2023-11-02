@@ -48,7 +48,7 @@ namespace QuestionAppUI.Authentication
                 {
                     new Claim(ClaimTypes.Role, userSession.Role),
                     new Claim("ObjectIdentifier", userSession.Identifier)
-                }));
+                }, "CustomAuth"));
             }
             else
             {
