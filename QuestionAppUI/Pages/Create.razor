@@ -23,7 +23,7 @@
                 <div class="input-section">
                     <label class="form-label fw-bold text-uppercase" for="question-text">Question</label>
                     <div class="input-description">Text your question</div>
-                    <InputText class="form-control" id="question-text" @bind-Value="questionModel.Question"></InputText>
+                    <InputTextArea Text class="form-control" id="question-text" @bind-Value="questionModel.Question"></InputTextArea>
                 </div>
                 <div >
                     <label  class="form-label fw-bold text-uppercase" for="category">Category</label>
@@ -43,7 +43,7 @@
                 <div class="input-section">
                     <label class="form-label fw-bold text-uppercase" for="description-text">Description</label>
                     <div class="input-description">Text your question description</div>
-                    <InputText class="form-control" id="description-text" @bind-Value="questionModel.Description"></InputText>
+                    <InputTextArea class="form-control" id="description-text" @bind-Value="questionModel.Description"></InputTextArea>
                 </div>
                 <div class="center-children">
                     <button class="btn btn-main btn-lg text-uppercase" type="submit">Suggest</button>
