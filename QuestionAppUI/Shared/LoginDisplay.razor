@@ -1,4 +1,8 @@
-﻿<AuthorizeView Roles="Admin">
+﻿@using QuestionAppUI.Authentication;
+@inject AuthenticationStateProvider authProvider
+@inject NavigationManager navManager
+
+<AuthorizeView Roles="Admin">
     <a class="login-link" href="/AdminApproval">
         Admin   
     </a>
@@ -8,7 +12,7 @@
         <a class="login-link" href="/Profile">
             Profile
         </a>
-        <a class="login-link" href="/SignOut">
+        <a class="login-link" @onclick="Logout">
             Logout
         </a>
     </Authorized>
@@ -18,3 +22,12 @@
         </a>
     </NotAuthorized>
 </AuthorizeView>
+
+@code
+{
+    private async Task Logout()
+    {
+        await ((CustomAuthenticationStateProvider)authProvider).UpdateAuthenticationState(null);
+        navManager.NavigateTo("/", true);
+    }
+}
