@@ -1,0 +1,176 @@
+﻿@page "/SampleData"
+
+@inject ICategoryData _categoryData
+@inject IStatusData _statusData
+@inject IQuestionData _questionData
+@inject IUserData _userData
+
+<h3>Sample Data</h3>
+
+@if (categoriesCreated)
+{
+    <h4>Categories have been created</h4>
+}
+else
+{
+    <button class="btn btn-primary" @onclick="CreateCategories">Create Categories</button>
+}
+
+@if (statusesCreated)
+{
+    <h4>Statuses have been created</h4>
+}
+else
+{
+    <button class="btn btn-primary" @onclick="CreateStatuses">Create Statuses</button>
+}
+
+@if (sampleDataCreated)
+{
+    <h4>Sample Data have been created</h4>
+}
+else
+{
+    <button class="btn btn-primary" @onclick="GenerateSampleData">Generate Sample Data</button>
+}
+
+@code {
+    private bool categoriesCreated = false;
+    private bool statusesCreated = false;
+    private bool sampleDataCreated = false;
+
+    private async Task GenerateSampleData()
+    {
+        var questionData = await _questionData.GetAllQuestions();
+        if (questionData?.Count > 0)
+        {
+            sampleDataCreated = true;
+            return;
+        }
+
+        UserModel user = new UserModel
+            {
+                Name = "Ramil",
+                LastName = "Khasanov",
+                DisplayName = "Ramil Khasanov",
+                ObjectIdentifier = "abs-123",
+                Email = "ramilxp@test.com"
+            };
+
+        await _userData.CreateUser(user);
+        var categories = await _categoryData.GetAllCategoies();
+        var statuses = await _statusData.GetAllStatuses();
+        var votes = new HashSet<string>();
+        votes.Add("1");
+        votes.Add("2");
+        votes.Add("3");
+
+        var question = new QuestionModel
+            {
+                Question = "This is 1st question",
+                Description = "This is description of question",
+                Author = new BasicUserModel(user),
+                UserVotes = votes,
+                Category = categories[0],
+                Status = statuses[0],
+                Answer = "This is answer to the question"
+            };
+        await _questionData.CreateQuestion(question);
+
+        question = new QuestionModel
+            {
+                Question = "This is 2end question",
+                Description = "This is description of question",
+                Author = new BasicUserModel(user),
+                Category = categories[1],
+                Status = statuses[1],
+                Answer = "This is answer to the question"
+            };
+        await _questionData.CreateQuestion(question);
+
+        votes.Add("4");
+        question = new QuestionModel
+            {
+                Question = "This is 2end question",
+                Description = "This is description of question",
+                Author = new BasicUserModel(user),
+                Category = categories[2],
+                UserVotes = votes
+            };
+        await _questionData.CreateQuestion(question);
+        sampleDataCreated = true;
+    }
+
+    private async Task CreateCategories()
+    {
+        var categories = await _categoryData.GetAllCategoies();
+        if (categories?.Count > 0)
+        {
+            categoriesCreated = true;
+            return;   
+        }
+
+        CategoryModel model = new CategoryModel()
+            {
+                Name = ".Net",
+                Description = "Question about .Net"
+            };
+        await _categoryData.CreateCategory(model);
+
+        model = new CategoryModel()
+            {
+                Name = "C#",
+                Description = "Question about C#"
+            };
+        await _categoryData.CreateCategory(model);
+
+        model = new CategoryModel()
+            {
+                Name = "ASP.NET Core",
+                Description = "Question about ASP.NET Core"
+            };
+        await _categoryData.CreateCategory(model);
+
+        model = new CategoryModel()
+            {
+                Name = "Other",
+                Description = "Question about work"
+            };
+        await _categoryData.CreateCategory(model);
+
+        categoriesCreated = true;
+    }
+
+    private async Task CreateStatuses()
+    {
+        var status = new StatusModel
+        {
+            Name = "completed",
+            Description = "This question is active"
+        };
+        await _statusData.CreateStatus(status);
+
+        status = new StatusModel
+        {
+                Name = "watching",
+                Description = "This question is watching"
+        };
+        await _statusData.CreateStatus(status);
+
+        status = new StatusModel
+        {
+                Name = "upcoming",
+                Description = "This question is upcoming"
+        };
+        await _statusData.CreateStatus(status);
+
+        status = new StatusModel
+        {
+                Name = "dismissed",
+                Description = "This question is dismissed"
+        };
+        await _statusData.CreateStatus(status);
+
+        statusesCreated = true;
+    }
+}

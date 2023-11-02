@@ -1,0 +1,56 @@
+﻿@page "/SignIn"
+@using QuestionAppUI.Authentication;
+@using QuestionAppUI.Models;
+
+@inject AuthenticationStateProvider authProvider
+@inject NavigationManager navManager;
+
+<h1 class="page-heading text-uppercase mb-4">Enter your Login and Password</h1>
+<div class="row justify-content-center create-form">
+    <div class="col-xl-8 col-lg-10 form-layout">
+        <EditForm Model="authUserModel" OnValidSubmit="Login">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="mb-3">
+                <label for="userName" class="form-label">Enter your Login</label>
+                <input id="userName" class="form-control" @bind="authUserModel.UserName"></input>
+            </div>
+            <div class="mb-3">
+                <label for="userPassword" class="form-label">Enter your Password</label>
+                <input id="userPassword" class="form-control" type="password" @bind="authUserModel.Password"></input>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private List<AuthUserModel> users = new List<AuthUserModel>
+    {
+        new AuthUserModel
+        {
+            UserName = "Ramil",
+            Password = "12345",
+            Identifier = "abs-123",
+            Role = "Admin"
+        }
+    };
+
+    private AuthUserModel authUserModel = new();
+
+    private async Task Login()
+    {
+        var user = users.FirstOrDefault(u => u.UserName == authUserModel.UserName && u.Password == authUserModel.Password);
+        if (user == null)
+            return;
+
+        var userState = (CustomAuthenticationStateProvider)authProvider;
+        await userState.UpdateAuthenticationState(new UserSession
+        {
+            Identifier = user.Identifier,
+            Role = user.Role
+        });
+
+        navManager.NavigateTo("/");
+    }
+}

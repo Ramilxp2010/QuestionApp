@@ -1,0 +1,201 @@
+﻿@page "/Profile"
+@inject IQuestionData questionData
+@inject IUserData userData
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authProvider
+
+<h1 class="page-heading text-uppercase mb-4">My Profile</h1>
+
+<div class="row">
+    <div class="col-12 close-btn-section">
+        <button class="btn btn-close" @onclick="ClosePage"></button>
+    </div>
+</div>
+
+<div class="form-layout mb-3">
+    <h2 class="my-submission-heading">My Account</h2>
+    <p class="my-submissin-text">
+        <a href="#">
+            Edit My Profile
+        </a>
+    </p>
+</div>
+
+@if (approvedQuestions?.Count > 0)
+{
+    <div class="form-layout mb-3">
+        <h2 class="my-submission-heading">Approved Questions</h2>
+        <p class="my-submissin-text">These are your questions that are currently active</p>
+
+        @foreach (var s in approvedQuestions)
+        {
+            <hr class="my-submission-separator" />
+            <div class="fw-bold question-detail-question">
+                @s.Question
+            </div>
+            <p class="my-submission-text">
+                @s.DateCreated.ToShortDateString()
+            </p>
+            <p class="my-submission-text">
+                Total Voted: @s.UserVotes?.Count
+            </p>
+            <p class="my-submission-text">
+                @s.Category.Name
+            </p>
+            <p class="my-submission-text">
+                @s.Description
+            </p>
+            @if (s.Status != null)
+            {
+                <div class="fw-bold question-detail-question">
+                    @s.Status.Name
+                </div>
+                <p class="my-submission-text">
+                    @((MarkupString)s.Answer)
+                </p>
+            }
+        }
+    </div>
+}
+
+@if (archivedQuestions?.Count > 0)
+{
+    <div class="form-layout mb-3">
+        <h2 class="my-submission-heading">Archived Questions</h2>
+        <p class="my-submissin-text">These are your questions that are currently archived</p>
+
+        @foreach (var s in archivedQuestions)
+        {
+            <hr class="my-submission-separator" />
+            <div class="fw-bold question-detail-question">
+                @s.Question
+            </div>
+            <p class="my-submission-text">
+                @s.DateCreated.ToShortDateString()
+            </p>
+            <p class="my-submission-text">
+                Total Voted: @s.UserVotes?.Count
+            </p>
+            <p class="my-submission-text">
+                @s.Category.Name
+            </p>
+            <p class="my-submission-text">
+                @s.Description
+            </p>
+            @if (s.Status != null)
+            {
+                <div class="fw-bold question-detail-question">
+                    @s.Status.Name
+                </div>
+                <p class="my-submission-text">
+                    @((MarkupString)s.Answer)
+                </p>
+            }
+        }
+    </div>
+}
+
+@if (rejectedQuestions?.Count > 0)
+{
+    <div class="form-layout mb-3">
+        <h2 class="my-submission-heading">Rejected Questions</h2>
+        <p class="my-submissin-text">These are your questions that are currently rejected</p>
+
+        @foreach (var s in rejectedQuestions)
+        {
+            <hr class="my-submission-separator" />
+            <div class="fw-bold question-detail-question">
+                @s.Question
+            </div>
+            <p class="my-submission-text">
+                @s.DateCreated.ToShortDateString()
+            </p>
+            <p class="my-submission-text">
+                Total Voted: @s.UserVotes?.Count
+            </p>
+            <p class="my-submission-text">
+                @s.Category.Name
+            </p>
+            <p class="my-submission-text">
+                @s.Description
+            </p>
+            @if (s.Status != null)
+            {
+                <div class="fw-bold question-detail-question">
+                    @s.Status.Name
+                </div>
+                <p class="my-submission-text">
+                    @((MarkupString)s.Answer)
+                </p>
+            }
+        }
+    </div>
+}
+
+@if (pendingQuestions?.Count > 0)
+{
+    <div class="form-layout mb-3">
+        <h2 class="my-submission-heading">Pending Questions</h2>
+        <p>These are your questions that are currently pending</p>
+
+        @foreach (var s in pendingQuestions)
+        {
+            <hr class="my-submission-separator" />
+            <div class="fw-bold question-detail-question">
+                @s.Question
+            </div>
+            <p class="my-submission-text">
+                @s.DateCreated.ToShortDateString()
+            </p>
+            <p class="my-submission-text">
+                Total Voted: @s.UserVotes?.Count
+            </p>
+            <p class="my-submission-text">
+                @s.Category.Name
+            </p>
+            <p class="my-submission-text">
+                @s.Description
+            </p>
+            @if (s.Status != null)
+            {
+                <div class="fw-bold question-detail-question">
+                    @s.Status.Name
+                </div>
+                <p class="my-submission-text">
+                    @((MarkupString)s.Answer)
+                </p>
+            }
+        }
+    </div>
+}
+
+@code {
+
+    private UserModel loggedUser;
+    private List<QuestionModel> allQuestions;
+    private List<QuestionModel> approvedQuestions;
+    private List<QuestionModel> archivedQuestions;
+    private List<QuestionModel> pendingQuestions;
+    private List<QuestionModel> rejectedQuestions;
+
+    protected async override Task OnInitializedAsync()
+    {
+        loggedUser = await authProvider.GetUserFromAuth(userData);
+        var results = await questionData.GetAllQuestionsByAuthor(loggedUser?.Id);
+
+        if (loggedUser != null && results != null)
+        {
+            allQuestions = results.OrderByDescending(x => x.DateCreated).ToList();
+            approvedQuestions = allQuestions.Where(x => x.IsAproved && !x.IsArchived && !x.IsRejected).ToList();
+            archivedQuestions = allQuestions.Where(x => x.IsArchived! && !x.IsRejected).ToList();
+            pendingQuestions = allQuestions.Where(x => !x.IsAproved && !x.IsArchived && !x.IsRejected).ToList();
+            rejectedQuestions = allQuestions.Where(x => x.IsRejected).ToList();
+        }        
+
+    }
+
+    private void ClosePage()
+    {
+        navManager.NavigateTo("/");
+    }
+}

@@ -1,0 +1,141 @@
+﻿@page "/AdminApproval"
+@attribute [Authorize(Roles = "Admin")]
+@inject IQuestionData questionData
+@inject IUserData userData
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<h1 class="page-heading text-uppercase mb-4">Pending Questions</h1>
+
+<div class="row">
+    <div class="question-count col-8 mt-2">@allQuestions?.Count Questions</div>
+    <div class="col-4 close-btn-section">
+        <button class="btn btn-close" @onclick="ClosePage"></button>
+    </div>
+</div>
+
+@if (allQuestions is not null)
+{
+    foreach (var s in allQuestions)
+    {
+        <div class="row submissions">
+            <div class="col-lg-2 col-md-3 col-sm-4">
+                <button class="btn btn-approve" @onclick="(()=> ApproveQuestion(s))">Approve</button>
+                <button class="btn btn-reject" @onclick="(()=> RejectQuestion(s))">Reject</button>
+            </div>
+            <div class="col-lg-10 col-md-9 col-sm-8">
+                <div>
+                    @if (currentEditingTitle == s.Id)
+                    {
+                        <EditForm class="approval-edit-form" Model="@editedTitle" OnSubmit="(()=>SaveTitle(s))">
+                            <InputText class="form-control approval-edit-field" @bind-Value="editedTitle"></InputText>
+                            <button class="btn" type="submit">
+                                <span class="oi oi-check submission-edit-approve"></span>
+                            </button>
+                            <button type="button" class="btn" @onclick="(()=> currentEditingTitle = string.Empty)">
+                                <span class="oi oi-x submission-edit-reject"></span>
+                            </button>
+                        </EditForm>
+                    }
+                    else
+                    {
+                        @s.Question
+                        <span class="oi oi-pencil submission-edit-icon" @onclick="(()=>EditTitle(s))"></span>
+                    }
+                </div>
+                <div>
+                    @s.Category.Name
+                </div>
+                <div>
+                    @s.Author.DisplayName
+                </div>
+                <div>
+                    @if (currentEditingDescription == s.Id)
+                    {
+                        <EditForm class="approval-edit-form" Model="@editedDescription" OnSubmit="(()=>SaveDescription(s))">
+                            <InputText class="form-control approval-edit-approve" @bind-Value="editedDescription"></InputText>
+                            <button class="btn" type="submit">
+                                <span class="oi oi-check submission-edit-approve"></span>
+                            </button>
+                            <button type="button" class="btn" @onclick="(()=> currentEditingDescription = string.Empty)">
+                                <span class="oi oi-x submission-edit-reject"></span>
+                            </button>
+                        </EditForm>
+                    }
+                    else
+                    {
+                        @s.Description
+                        <span class="oi oi-pencil submission-edit-icon" @onclick="(()=>EditDescription(s))"></span>
+                    }
+                </div>
+            </div>
+        </div>
+    }   
+}
+
+@code {
+    private List<QuestionModel> allQuestions;
+    private QuestionModel editingModel;
+    private string currentEditingTitle = "";
+    private string editedTitle = "";
+    private string currentEditingDescription = "";
+    private string editedDescription = "";
+
+    protected async override Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider
+            .GetAuthenticationStateAsync();
+        var user = authState.User;
+        allQuestions = await questionData.GetAllQuestionsForApprove();
+    }
+
+    private async Task ApproveQuestion(QuestionModel question)
+    {
+        question.IsAproved = true;
+        allQuestions.Remove(question);
+        await questionData.UpdateQuestion(question);
+    }
+
+    private async Task RejectQuestion(QuestionModel question)
+    {
+        question.IsRejected = true;
+        allQuestions.Remove(question);
+        await questionData.UpdateQuestion(question);
+    }
+
+    private void ClosePage()
+    {
+        navManager.NavigateTo("/");   
+    }
+
+    private void EditTitle(QuestionModel question)
+    {
+        editingModel = question;
+        editedTitle = question.Question;
+        currentEditingTitle = question.Id;
+        currentEditingDescription = "";
+    }
+
+    private async Task SaveTitle(QuestionModel question)
+    {
+        currentEditingTitle = string.Empty;
+        question.Question = editedTitle;
+        await questionData.UpdateQuestion(question);
+    }
+
+    private void EditDescription(QuestionModel question)
+    {
+        editingModel = question;
+        editedDescription = question.Description;
+        currentEditingTitle = "";
+        currentEditingDescription = question.Id;
+    }
+
+    private async Task SaveDescription(QuestionModel question)
+    {
+        currentEditingDescription = string.Empty;
+        question.Description = editedDescription;
+        await questionData.UpdateQuestion(question);
+    }
+}

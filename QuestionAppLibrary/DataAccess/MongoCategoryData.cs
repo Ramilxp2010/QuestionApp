@@ -1,0 +1,34 @@
+﻿using Microsoft.Extensions.Caching.Memory;
+namespace QuestionAppLibrary.DataAccess
+{
+    public class MongoCategoryData : ICategoryData
+    {
+        private readonly IMongoCollection<CategoryModel> _categories;
+        private readonly IMemoryCache _cache;
+        private const string CacheName = "CategoryData";
+
+        public MongoCategoryData(IDbConnection db, IMemoryCache cache)
+        {
+            this._categories = db.CategoryCollection;
+            _cache = cache;
+        }
+
+        public async Task<List<CategoryModel>> GetAllCategoies()
+        {
+            var output = _cache.Get<List<CategoryModel>>(CacheName);
+            if (output is not null)
+                return output;
+
+            var results = await _categories.FindAsync(_ => true);
+            output = results.ToList();
+            _cache.Set(CacheName, output, TimeSpan.FromDays(1));
+
+            return output;
+        }
+
+        public Task CreateCategory(CategoryModel category)
+        {
+            return _categories.InsertOneAsync(category);
+        }
+    }
+}

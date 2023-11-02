@@ -1,0 +1,250 @@
+﻿@page "/Details/{Id}"
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authProvider
+
+@inject IUserData userData
+@inject IQuestionData questionData
+@inject IStatusData statusData
+
+<h1 class="page-heading text-uppercase mb-4">Question details</h1>
+
+<div class="row justify-content-center detail-form">
+    <div class="col-xl-8 col-lg-10 form-layout">
+        @if (question is not null)
+        {
+            <div class="row question-detail-row">
+                <div class="col-11 question-detail">
+                    <div>
+                        <div class="@GetVoteClass()" @onclick="(()=>UpVote())">
+                            <div class="text-uppercase">@GetUpvoteTopText()</div>
+                            <span class="oi oi-caret-top entry-upvote"></span>
+                            <div class="text-uppercase">@GetUpvoteBottomText()</div>
+                        </div>
+                        <div class="question-detail-date">
+                            <div>@question.DateCreated.ToString("dd.MM.yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="question-detail-text">
+                        <div class="fw-bold mb-2 question-detail-question">@question.Question</div>
+                        <div class="mb-2 question-detail-autor">@question.Author.DisplayName</div>
+                        <div class="mb-2">@question.Description</div>
+                        <div class="question-entry-text-category">
+                            @question.Category.Name
+                        </div>
+                    </div>
+                </div>
+                <div class="col-1 close-btn-section">
+                    <button class="btn btn-close" @onclick ="ClosePage"></button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (question?.Status is not null)
+{
+    <div class="row justify-content-center detail-form">
+        <div class="col-xl-8 col-lg-10 question-results form-layout">
+            <div class="@GetStatusClass()"></div>
+            <div class="question-detail-status-section">
+                <div class="question-deatail-status fw-bold mb-2 question-detail-question">
+                    @question.Status.Name
+                </div>
+                <div class="question-detail-answer">
+                    @((MarkupString)question.Answer)
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (question != null)
+{
+    <AuthorizeView Roles="Admin">
+        <div class="row justify-content-center detail-form">
+            <div class="col-xl-8 col-lg-10 form-layout admin-details">
+                <div>
+                    <div class="question-detail-status fw-bold mb-2 question-detail-question">
+                        Set Status
+                    </div>
+                    @if (string.IsNullOrEmpty(settingStatus))
+                    {
+                        <div class="admin-set-statuses">
+                            <button @onclick="@(()=> settingStatus = "completed")"
+                            class="btn question-entry-text-category btn-archive bnt-status-completed">
+                                completed
+                            </button>
+                            <button @onclick="@(()=> settingStatus = "upcoming")"
+                            class="btn question-entry-text-category btn-archive bnt-status-upcoming">
+                                upcoming
+                            </button>
+                            <button @onclick="@(()=> settingStatus = "watching")"
+                            class="btn question-entry-text-category btn-archive bnt-status-watching">
+                                watching
+                            </button>
+                            <button @onclick="@(()=> settingStatus = "dismissed")"
+                            class="btn question-entry-text-category btn-archive bnt-status-dismissed">
+                                dismissed
+                            </button>
+                        </div>
+                    }
+                    else if (settingStatus == "completed")
+                    {
+                        <div> 
+                            <input @bind="urlText" class="form-control rounded-control" type="text"
+                            placeholder="Url" aria-label="Content Url"></input>
+                        </div>
+                        <div class="question-entry-bottom">
+                            <button class="btn btn-archive-confirm" @onclick="CompleteSetStatus">
+                                confirm
+                            </button>
+                            <button class="btn btn-archive-reject" @onclick="(()=>settingStatus = null)">
+                                cancel
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="question-entry-bottom">
+                            <button class="btn btn-archive-confirm" @onclick="CompleteSetStatus">
+                                confirm
+                            </button>
+                            <button class="btn btn-archive-reject" @onclick="(()=>settingStatus = null)">
+                                cancel
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </AuthorizeView>   
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private UserModel loggedUser;
+    private QuestionModel question;
+
+    private List<StatusModel> statuses;
+    private string settingStatus;
+    private string urlText = "";
+
+    protected async override Task OnInitializedAsync()
+    {
+        question = await questionData.GetQuestion(Id);
+        loggedUser = await authProvider.GetUserFromAuth(userData);
+        statuses = await statusData.GetAllStatuses();
+    }
+
+    private async Task CompleteSetStatus()
+    {
+        switch (settingStatus)
+        {
+            case "completed":
+                if (string.IsNullOrWhiteSpace(urlText))
+                {
+                    return;
+                }
+                question.Status = statuses.Where(s => s.Name.ToLower() == settingStatus.ToLower()).First();
+                question.Answer = @"Added <a href='{urlText}' target='_blank'>{urlText}</a>";
+                break;
+
+            case "watching":
+                question.Status = statuses.Where(s => s.Name.ToLower() == settingStatus.ToLower()).First();
+                question.Answer = @"We see it";
+                break;
+
+            case "upcoming":
+                question.Status = statuses.Where(s => s.Name.ToLower() == settingStatus.ToLower()).First();
+                question.Answer = @"upcoming";
+                break;
+
+            case "dismissed":
+                question.Status = statuses.Where(s => s.Name.ToLower() == settingStatus.ToLower()).First();
+                question.Answer = @"dismissed";
+                break;
+            default:
+                return;
+
+        }
+
+        settingStatus = null;
+        await questionData.UpdateQuestion(question);
+    }
+
+    protected void ClosePage()
+    {
+        navManager.NavigateTo("/");   
+    }
+
+    private string GetUpvoteTopText()
+    {
+        //TODO
+        return question.UserVotes?.Count > 0
+        ? question.UserVotes?.Count.ToString("00")
+        : question.Author.Id == loggedUser?.Id
+        ? "Awaiting"
+        : "Click To";
+    }
+
+    private string GetUpvoteBottomText()
+    {
+        return question.UserVotes?.Count > 1 ? "Upcotes" : "Upvote";
+    }
+
+    private async Task UpVote()
+    {
+        if (loggedUser is null)
+        {
+            navManager.NavigateTo("/SignIn");
+            return;
+        }
+
+        if (question.Author.Id != loggedUser.Id)
+        {
+            if (!question.UserVotes.Add(loggedUser.Id))
+            {
+                question.UserVotes.Remove(loggedUser.Id);
+            }
+
+            await questionData.UpVoeted(question.Id, loggedUser.Id);
+        }
+    }
+
+    private string GetVoteClass()
+    {
+        if (question.UserVotes == null || question.UserVotes.Count == 0)
+        {
+            return "question-detail-no-votes";
+        }
+        else if (question.UserVotes.Contains(loggedUser?.Id))
+        {
+            return "question-detail-voted";
+        }
+        else
+        {
+            return "question-detail-not-voted";
+        }
+    }
+
+    private string GetStatusClass()
+    {
+        if (question == null || question.Status == null)
+        {
+            return "question-detail-status-none";
+        }
+
+        string output = question.Status.Name switch
+        {
+            "Completed" => "question-detail-status-complated",
+            "Wathing" => "question-detail-status-wathing",
+            "Upcoming" => "question-detail-status-upcoming",
+            "Dismissed" => "question-detail-status-dismissed",
+            _ => "question-detail-status-none"
+        };
+
+        return output;
+    }
+}

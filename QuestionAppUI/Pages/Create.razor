@@ -1,0 +1,93 @@
+﻿@page "/Create"
+@attribute [Authorize]
+@using QuestionAppUI.Components
+@using QuestionAppUI.Models;
+@inject ICategoryData categoryData
+@inject IQuestionData questionData
+@inject IUserData userData
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authProvider
+
+<h1 class="page-heading text-uppercase mb-4">Make a question</h1>
+
+<div class="row justify-content-center create-form">
+    <div class="col-xl-8 col-lg-10 form-layout">
+        <div class="close-btn-section">
+            <button class="btn btn-close" @onclick="ClosePage"></button>
+        </div>
+        @if (categories is not null)
+        {
+            <EditForm Model="questionModel" OnValidSubmit="CreateQuestion">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="input-section">
+                    <label class="form-label fw-bold text-uppercase" for="question-text">Question</label>
+                    <div class="input-description">Text your question</div>
+                    <InputText class="form-control" id="question-text" @bind-Value="questionModel.Question"></InputText>
+                </div>
+                <div >
+                    <label  class="form-label fw-bold text-uppercase" for="category">Category</label>
+                    <div class="input-description">Choose one category</div>
+                    <div class="col-lg-8">
+                        <CustomInputRadioGroup id="category" @bind-Value="questionModel.CategoryId">
+                            @foreach (var c in categories)
+                            {
+                                <div class="radio-item-group">
+                                    <InputRadio Value="@c.Id" id="@c.Id" />
+                                    <label for="@c.Id">@c.Name - @c.Description</label>
+                                </div>
+                            }
+                        </CustomInputRadioGroup>
+                    </div>
+                </div>
+                <div class="input-section">
+                    <label class="form-label fw-bold text-uppercase" for="description-text">Description</label>
+                    <div class="input-description">Text your question description</div>
+                    <InputText class="form-control" id="description-text" @bind-Value="questionModel.Description"></InputText>
+                </div>
+                <div class="center-children">
+                    <button class="btn btn-main btn-lg text-uppercase" type="submit">Suggest</button>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    private CreateQuestionModel questionModel = new();
+    private List<CategoryModel> categories;
+    private UserModel loggedUser;
+
+    protected async override Task OnInitializedAsync()
+    {
+        categories = await categoryData.GetAllCategoies();
+
+        loggedUser = await authProvider.GetUserFromAuth(userData);
+    }
+
+    private void ClosePage()
+    {
+        navManager.NavigateTo("/");   
+    }
+
+    private async Task CreateQuestion()
+    {
+        QuestionModel question = new QuestionModel()
+            {
+                Question = questionModel.Question,
+                Description = questionModel.Description,
+                Author = new BasicUserModel(loggedUser),
+                Category = categories.Where(x => x.Id == questionModel.CategoryId).FirstOrDefault()
+            };
+
+        if (question.Category is null)
+        {
+            questionModel.CategoryId = string.Empty;
+            return;
+        }
+
+        await questionData.CreateQuestion(question);
+        question = null;
+        ClosePage();
+    }
+}

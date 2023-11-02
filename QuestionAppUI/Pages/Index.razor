@@ -1,0 +1,332 @@
+﻿@page "/"
+
+@inject ICategoryData categoryData
+@inject IStatusData statusData
+@inject IQuestionData questionData
+@inject IUserData userData
+@inject NavigationManager navManager
+@inject ProtectedSessionStorage sessionStorage
+@inject AuthenticationStateProvider authProvider
+
+<h1 class="page-heading text-uppercase mb-4">Training questions</h1>
+<div class="question-container">
+    <button @onclick="LoadCreatePage" class="question-btn btn btn-outline-light btn-lg text-uppercase">Suggest Question</button>
+</div>
+
+<div class="row">
+    <div class="question-count col-md-4 text-light mt-2">@questions?.Count Questions</div>
+    <div class="col-md-4 col-xl-5 btn-group">
+        <button class="btn btn-order @SortedByNewClass(true)" @onclick="(()=> OrderByNew(true))">New</button>
+        <button class="btn btn-order @SortedByNewClass(false)" @onclick="(()=> OrderByNew(false))">Popular</button>
+    </div>
+    <div class="col-md-4 col-xl-3 search-box">
+        <input type="text" placeholder="Search" 
+            aria-label="Search box" class="form-control rounded-control"
+            @oninput="((txt)=>OnSearchInput((string)txt.Value))"/>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 col-xl-9">
+        @if (questions is not null)
+        {
+            <Virtualize Items="@questions" Context="question" OverscanCount="10">
+                <div class="question-entry">
+                    <div class="@GetVoteClass(question)" @onclick="(()=>UpVote(question))">
+                        <div class="text-uppercase">@GetUpvoteTopText(question)</div>
+                        <span class="oi oi-caret-top" style="font-size: 3rem;"></span>
+                        <div class="text-uppercase">@GetUpvoteBottomText(question)</div>
+                    </div>
+                    <div class="question-entry-text">
+                        <div class="question-entry-text-title" @onclick="(()=> OpenDetails(question))">
+                            @question.Question
+                        </div>
+                        @if (archivingQuestion == null || archivingQuestion.Id != question.Id)
+                        {
+                            <div class="question-entry-bottom">
+                                <div class="question-entry-text-category" @onclick="(()=> OpenDetails(question))">
+                                    @question.Category?.Name
+                                </div>
+                                <AuthorizeView Roles="Admin">
+                                    <button @onclick="(()=> archivingQuestion = question)" 
+                                        class="btn question-entry-text-category btn-archive">
+                                        Archive
+                                    </button>
+                                </AuthorizeView>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="question-entry-bottom">
+                                <button class="btn btn-archive btn-archive-confirm" @onclick="ArchiveQuestion">
+                                    confirm
+                                </button>
+                                <button class="btn btn-archive btn-archive-reject" @onclick="(()=>archivingQuestion = null)">
+                                    cancel
+                                </button>
+                            </div>
+                        }
+                    </div>
+                    <div class="question-entry-status @GetQuestionStatusClass(question)">
+                        <div class="question-entry-status-text">
+                            @question.Status?.Name
+                        </div>
+                    </div>
+                </div>
+            </Virtualize>   
+        }
+    </div>
+    <div class="col-md-4 col-xl-3">
+        @if (categories is not null)
+        {
+            <div class="categories">
+                <span class="text-uppercase fw-bold">Category</span>
+                <div class="@GetSelectedCategiryClass()" @onclick = "(()=>OnCategoryClick())">All</div>
+                @foreach (var c in categories)
+                {
+                    <div class="@GetSelectedCategiryClass(c.Name)" @onclick="(()=> OnCategoryClick(c.Name))">@c.Name</div>
+                }
+            </div>
+        }
+        @if (statuses is not null)
+        {
+            <div class="statuses">
+                <span class="text-uppercase fw-bold">Status</span>
+                <div class="@GetSelectedStatusClass()" @onclick="(()=>OnStatusClick())">All</div>
+                @foreach (var c in statuses)
+                {
+                    <div class="@GetSelectedStatusClass(c.Name)" @onclick="(()=> OnStatusClick(c.Name))">@c.Name</div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code{
+    private UserModel loggedUser;
+
+    private List<QuestionModel> questions;
+    private List<CategoryModel> categories;
+    private List<StatusModel> statuses;
+    private QuestionModel archivingQuestion;
+
+    private string selectedCategory = "All";
+    private string selectedStatus = "All";
+    private string searchText = "";
+    bool isSortedByNew = true;
+
+    protected async override Task OnInitializedAsync()
+    {
+        categories = await categoryData.GetAllCategoies();
+        statuses = await statusData.GetAllStatuses();
+
+        loggedUser = await authProvider.GetUserFromAuth(userData);
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadFilterState();
+            await FilterQuestions();
+            StateHasChanged();
+        }
+    }
+
+    private async Task ArchiveQuestion()
+    {
+        archivingQuestion.IsArchived = true;
+        await questionData.UpdateQuestion(archivingQuestion);
+        questions.Remove(archivingQuestion);
+        archivingQuestion = null;
+    }
+
+    private async Task LoadFilterState()
+    {
+        var stringResults = await sessionStorage.GetAsync<string>(nameof(selectedCategory));
+        selectedCategory = stringResults.Success ? stringResults.Value : "All";
+
+        stringResults = await sessionStorage.GetAsync<string>(nameof(selectedStatus));
+        selectedStatus = stringResults.Success ? stringResults.Value : "All";
+
+        stringResults = await sessionStorage.GetAsync<string>(nameof(searchText));
+        searchText = stringResults.Success ? stringResults.Value : "";
+
+        var boolResults = await sessionStorage.GetAsync<bool>(nameof(isSortedByNew));
+        isSortedByNew = boolResults.Success ? boolResults.Value : true;
+    }
+
+    private async Task SaveFillterState()
+    {
+        await sessionStorage.SetAsync(nameof(selectedCategory), selectedCategory);
+        await sessionStorage.SetAsync(nameof(selectedStatus), selectedStatus);
+        await sessionStorage.SetAsync(nameof(searchText), searchText);
+        await sessionStorage.SetAsync(nameof(isSortedByNew), isSortedByNew);
+    }
+
+    private async Task FilterQuestions()
+    {
+        var output = await questionData.GetAllApprovedQuestions();
+        if (selectedCategory != "All")
+        {
+            output = output.Where(x => x.Category?.Name == selectedCategory).ToList();
+        }
+
+        if (selectedStatus != "All")
+        {
+            output = output.Where(x => x.Status?.Name == selectedStatus).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            output = output.Where(x => x.Question.Contains(searchText, StringComparison.CurrentCultureIgnoreCase) ||
+            x.Description.Contains(searchText, StringComparison.CurrentCultureIgnoreCase))
+            .ToList();
+        }
+
+        if (isSortedByNew)
+        {
+            output = output.OrderByDescending(x => x.DateCreated).ToList();
+        }
+        else
+        {
+            output = output.OrderByDescending(x => x.UserVotes.Count).ThenByDescending(x => x.DateCreated).ToList();
+        }
+
+        questions = output;
+        await SaveFillterState();
+    }
+
+    private async Task OrderByNew(bool isNew)
+    {
+        isSortedByNew = isNew;
+        await FilterQuestions();
+    }
+
+    private void LoadCreatePage()
+    {
+        if (loggedUser != null)
+        {
+            navManager.NavigateTo("/Create");   
+        }
+        else
+        {
+            navManager.NavigateTo("/SignIn");
+        }
+    }
+
+    private async Task OnSearchInput(string searchInput)
+    {
+        searchText = searchInput;
+        await FilterQuestions();
+    }
+
+    private async Task OnCategoryClick(string category = "All")
+    {
+        selectedCategory = category;
+        await FilterQuestions();
+    }
+
+    private async Task OnStatusClick(string status = "All")
+    {
+        selectedStatus = status;
+        await FilterQuestions();
+    }
+
+    private async Task UpVote(QuestionModel question)
+    {
+        if (loggedUser is null)
+        {
+            navManager.NavigateTo("/SignIn");
+            return;
+        }
+
+        if (question.Author.Id != loggedUser.Id)
+        {
+            if (!question.UserVotes.Add(loggedUser.Id))
+            {
+                question.UserVotes.Remove(loggedUser.Id);
+            }
+
+            await questionData.UpVoeted(question.Id, loggedUser.Id);
+
+            if (!isSortedByNew)
+            {
+                questions = questions.OrderByDescending(s => s.UserVotes.Count)
+                    .ThenByDescending(x => x.DateCreated).ToList();
+            }
+        }
+    }
+
+    private string GetUpvoteTopText(QuestionModel question)
+    {
+        //TODO
+        return question.UserVotes?.Count > 0
+        ? question.UserVotes?.Count.ToString("00")
+        : question.Author.Id == loggedUser?.Id
+        ? "Awaiting"
+        : "Click To";
+    }
+
+    private string GetUpvoteBottomText(QuestionModel question)
+    {
+        return question.UserVotes?.Count > 1 ? "Upvotes" : "Upvote";
+    }
+
+    private void OpenDetails(QuestionModel question)
+    {
+        navManager.NavigateTo($"/Details/{question.Id}");
+    }
+
+    private string SortedByNewClass(bool isNew)
+    {
+        return isNew == isSortedByNew
+        ? "sort-selected"
+        : "";
+    }
+
+    private string GetVoteClass(QuestionModel question)
+    {
+        if (question.UserVotes == null || question.UserVotes.Count == 0)
+        {
+            return "question-entry-no-votes";    
+        }
+        else if (question.UserVotes.Contains(loggedUser?.Id))
+        {
+            return "question-entry-voted";
+        }
+        else
+        {
+            return "question-entry-not-voted";
+        }
+    }
+
+    private string GetQuestionStatusClass(QuestionModel question)
+    {
+        if (question == null || question.Status == null)
+        {
+            return "question-entry-status-none";
+        }
+
+        string output = question.Status.Name switch
+        {
+            "Completed" => "question-entry-status-complated",
+            "Wathing" => "question-entry-status-wathing",
+            "Upcoming" => "question-entry-status-upcoming",
+            "Dismissed" => "question-entry-status-dismissed",
+            _ => "question-entry-status-none"
+        };
+
+        return output;
+    }
+
+    private string GetSelectedCategiryClass(string category = "All")
+    {
+        return category == selectedCategory ? "selected-category" : "";
+    }
+
+    private string GetSelectedStatusClass(string status = "All")
+    {
+        return status == selectedStatus ? "selected-status" : "";
+    }
+}
