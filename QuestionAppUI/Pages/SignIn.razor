@@ -25,22 +25,11 @@
 </div>
 
 @code {
-    private List<AuthUserModel> users = new List<AuthUserModel>
-    {
-        new AuthUserModel
-        {
-            UserName = "Ramil",
-            Password = "12345",
-            Identifier = "abs-123",
-            Role = "Admin"
-        }
-    };
-
     private AuthUserModel authUserModel = new();
 
     private async Task Login()
     {
-        var user = users.FirstOrDefault(u => u.UserName == authUserModel.UserName && u.Password == authUserModel.Password);
+        var user = QuestionAppUI.Data.SampleData.AuthUsers.FirstOrDefault(u => u.UserName == authUserModel.UserName && u.Password == authUserModel.Password);
         if (user == null)
             return;
 
