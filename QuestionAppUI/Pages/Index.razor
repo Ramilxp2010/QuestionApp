@@ -211,7 +211,7 @@
         }
         else
         {
-            navManager.NavigateTo("/SignIn");
+            navManager.NavigateTo("/identity/account/login", true);
         }
     }
 
@@ -237,7 +237,7 @@
     {
         if (loggedUser is null)
         {
-            navManager.NavigateTo("/SignIn");
+            navManager.NavigateTo("/identity/account/login", true);
             return;
         }
 
