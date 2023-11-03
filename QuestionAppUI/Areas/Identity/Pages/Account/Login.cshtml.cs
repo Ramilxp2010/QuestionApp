@@ -20,6 +20,9 @@ namespace QuestionAppUI.Areas.Identity.Account.Pages
 
         public async Task<IActionResult> OnGetAsync()
         {
+            if (_accessor.HttpContext.User.Identity.IsAuthenticated)
+                return Redirect("/");
+
             return Page();
         }
 
