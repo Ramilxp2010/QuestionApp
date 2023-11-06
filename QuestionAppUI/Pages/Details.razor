@@ -39,12 +39,13 @@
                     <button class="btn btn-close" @onclick ="ClosePage"></button>
                 </div>
             </div>
+
+            <div class="fw-bold answer-count">@GetAnswerCountStr()</div>
         }
     </div>
 </div>
-
 <div class="row justify-content-center detail-form">
-    <div class="input-section col-xl-8 form-layout form-layout-editor">
+    <div class="col-xl-8 form-layout form-layout-editor">
         <div class="answer-placeholder">Add your answer</div>
         <RadzenHtmlEditor class="@GetEditorClass()" @bind-Value=@inputAnswer UploadUrl="upload/image" @onclick="ChangeEditorSize">
             <RadzenHtmlEditorUndo />
@@ -57,7 +58,7 @@
             <RadzenHtmlEditorSeparator />
             <RadzenHtmlEditorColor />
             <RadzenHtmlEditorBackground />
-            <RadzenHtmlEditorRemoveFormat/>
+            <RadzenHtmlEditorRemoveFormat />
         </RadzenHtmlEditor>
         <div class="right-children">
             <button class="btn btn-main btn-md text-uppercase" type="button" @onclick="SaveAnswer">Suggest</button>
@@ -80,7 +81,7 @@
                         <a href="#">@GetAnswerAutorName(answer)</a>
                     </div>
                     <div class="col-4 answer-date">
-                        22.12.2021
+                        @answer.CreateDate.ToString("dd.MM.yyyy")
                     </div>
                 </div>
                 <input type="checkbox" class="read-more-checker" id="read-more-checker" />
@@ -196,6 +197,21 @@
         answers = await answerData.GetQuestionAnswers(question.Id);
         answers = answers.Where(x => x.IsApproved || x.Author.Id == loggedUser?.Id).ToList();
 
+    }
+
+    private string GetAnswerCountStr()
+    {
+        int count = 0;
+        if (answers != null && answers.Any())
+        {
+            count = answers.Count;
+        }
+
+        return count == 0 
+        ? $"No Answers yet" 
+        : count == 1 
+        ? $"{count} Answer" 
+        : $"{count} Answers";
     }
 
     private void ChangeEditorSize()

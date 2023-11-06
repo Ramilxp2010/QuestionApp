@@ -650,9 +650,6 @@ a, .btn-link {
     color: #F9C30B;
 }
 
-.answer-detail {
-    margin-top:10px;
-}
 .right-children {
     margin-top:10px;
     display: flex;
@@ -682,8 +679,15 @@ a, .btn-link {
 }
 
 .answer-date {
-    color: #70737b;
-    padding-left:0;
+    color: #A9A9A9;
+    padding-left: 0;
+}
+
+.answer-count {
+    color: #A9A9A9;
+    border-bottom: 2px #A9A9A9 solid;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .limiter {

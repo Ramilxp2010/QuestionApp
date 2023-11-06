@@ -10,6 +10,8 @@
 
         public UserModel Author { get; set; }
 
+        public DateTime CreateDate { get; set; }
+
         public string QuestionId { get; set; }
 
         public HashSet<string> Votes { get; set; }
