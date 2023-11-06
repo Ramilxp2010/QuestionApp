@@ -30,8 +30,14 @@
                         <div class="fw-bold mb-2 question-detail-question">@question.Question</div>
                         <div class="mb-2 question-detail-autor">@question.Author.DisplayName</div>
                         <div class="mb-2">@question.Description</div>
-                        <div class="question-entry-text-category">
-                            @question.Category.Name
+
+                        <div class="question-entry-bottom">
+                            @foreach(var category in question.Categories)
+                            {
+                                <div class="question-entry-text-category">
+                                    @category.Name
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>

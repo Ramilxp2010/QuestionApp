@@ -55,7 +55,7 @@ namespace QuestionAppLibrary.DataAccess
             return results.Where(x => x.IsAproved
                 && !x.IsRejected
                 && !x.IsArchived
-                && x.Category.Id == categoryId).ToList();
+                && x.Categories.Any(x=>x.Id == categoryId)).ToList();
         }
 
         public async Task<List<QuestionModel>> GetAllQuestionsByStatus(string statusId)

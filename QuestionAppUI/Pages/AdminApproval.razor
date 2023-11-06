@@ -44,9 +44,12 @@
                         <span class="oi oi-pencil submission-edit-icon" @onclick="(()=>EditTitle(s))"></span>
                     }
                 </div>
-                <div>
-                    @s.Category.Name
-                </div>
+                @foreach (var category in s.Categories)
+                {
+                    <div>
+                        @category.Name
+                    </div>
+                }
                 <div>
                     @s.Author.DisplayName
                 </div>

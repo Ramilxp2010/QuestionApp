@@ -44,9 +44,12 @@
                         @if (archivingQuestion == null || archivingQuestion.Id != question.Id)
                         {
                             <div class="question-entry-bottom">
-                                <div class="question-entry-text-category" @onclick="(()=> OpenDetails(question))">
-                                    @question.Category?.Name
-                                </div>
+                                @foreach (var category in question.Categories)
+                                {
+                                    <div class="question-entry-text-category" @onclick="(()=> OpenDetails(question))">
+                                        @category.Name
+                                    </div>
+                                }
                                 <AuthorizeView Roles="Admin">
                                     <button @onclick="(()=> archivingQuestion = question)" 
                                         class="btn question-entry-text-category btn-archive">
@@ -169,7 +172,7 @@
         var output = await questionData.GetAllApprovedQuestions();
         if (selectedCategory != "All")
         {
-            output = output.Where(x => x.Category?.Name == selectedCategory).ToList();
+            output = output.Where(x => x.Categories.Any(c => c.Name == selectedCategory)).ToList();
         }
 
         if (selectedStatus != "All")

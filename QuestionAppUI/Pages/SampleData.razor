@@ -22,11 +22,11 @@ else
 
     private async Task GenerateSampleData()
     {
-        await CreateAnswers();
         await CreateCategories();
         await CreateStatuses();
         await CreateUsers();
         await CreateQuestions();
+        await CreateAnswers();
 
         sampleDataCreated = true;
     }
@@ -45,7 +45,7 @@ else
         }
         return;
     }
-    
+
     private async Task CreateQuestions()
     {
         var questions = await _questionData.GetAllQuestions();
@@ -58,7 +58,7 @@ else
                 var user = await _userData.GetUserByIdentifier(question.Author.ObjectId);
                 question.Author = new BasicUserModel(user);
                 question.Status = statuses?.FirstOrDefault(x => x.Name == question.Status?.Name);
-                question.Category = categories?.FirstOrDefault(x => x.Name == question.Category?.Name);
+                question.Categories = categories?.Where(x => question.Categories.Any(c => c.Name == x.Name)).ToList();
                 await _questionData.CreateQuestion(question);
             }
         }

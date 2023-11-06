@@ -73,14 +73,14 @@
     private async Task CreateQuestion()
     {
         QuestionModel question = new QuestionModel()
-            {
-                Question = questionModel.Question,
-                Description = questionModel.Description,
-                Author = new BasicUserModel(loggedUser),
-                Category = categories.Where(x => x.Id == questionModel.CategoryId).FirstOrDefault()
-            };
+        {
+            Question = questionModel.Question,
+            Description = questionModel.Description,
+            Author = new BasicUserModel(loggedUser),
+            Categories = categories.Where(x => x.Id == questionModel.CategoryId).ToList()
+        };
 
-        if (question.Category is null)
+        if (question.Categories is null)
         {
             questionModel.CategoryId = string.Empty;
             return;
