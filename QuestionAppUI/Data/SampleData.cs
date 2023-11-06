@@ -102,5 +102,25 @@ namespace QuestionAppUI.Data
                 IsAproved = true,
             },
         };
+
+
+        public static List<AnswerModel> SampleAnswers = new List<AnswerModel>
+        {
+            new AnswerModel
+            {
+                Answer = "Ссылочные типы в языке C# определяются с помощью ключевого слова class. ссылочные типы – это все типы, кроме прямых или косвенных потомков System.ValueType. Массивы интерфейсы и делегаты – это тоже ссылочные тип. Типы-значения в языке C# – это типы, определённые с помощью ключевых слов struct, enum, а также все фундаментальные кроме string. Переменные ссылочных типов содержат адреса объектов, а переменные типов-значений содержат сами объекты. ",
+                Author = SampleUsers[0]
+            },
+            new AnswerModel
+            {
+                Answer = "Ссылочные типы в языке C# определяются с помощью ключевого слова class.",
+                Author = SampleUsers[1]
+            },
+            new AnswerModel
+            {
+                Answer = "Ссылочные типы в языке C# определяются с помощью ключевого слова class.",
+                Author = SampleUsers[2]
+            }
+        };
     }
 }
