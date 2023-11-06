@@ -14,5 +14,7 @@ namespace QuestionAppLibrary.DataAccess
         string StatusCollectionName { get; }
         IMongoCollection<UserModel> UserCollection { get; }
         string UserCollectionName { get; }
+        IMongoCollection<AnswerModel> AnswerCollection { get; }
+        string AnswerCollectionName { get; }
     }
 }

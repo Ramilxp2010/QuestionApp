@@ -32,6 +32,7 @@ namespace QuestionAppUI
             builder.Services.AddSingleton<IStatusData, MongoStatusData>();
             builder.Services.AddSingleton<IUserData, MongoUserData>();
             builder.Services.AddSingleton<IQuestionData, MongoQuestionData>();
+            builder.Services.AddSingleton<IAnswerData, MongoAnswerData>();
 
         }
     }

@@ -19,6 +19,10 @@ namespace QuestionAppLibrary.Models
 
         public List<BasicQuestionModel> AutoredQuestions { get; set; } = new();
 
+        public List<BasicAnswerModel> AuthoredAnswers { get; set; } = new();
+
+        public List<BasicAnswerModel> VotedAnswers { get; set; } = new();
+
         public List<BasicQuestionModel> VotedQuestions { get; set; } = new();
     }
 }

@@ -4,6 +4,7 @@
 @inject IStatusData _statusData
 @inject IQuestionData _questionData
 @inject IUserData _userData
+@inject IAnswerData _answerData
 
 <h3>Sample Data</h3>
 
@@ -21,6 +22,7 @@ else
 
     private async Task GenerateSampleData()
     {
+        await CreateAnswers();
         await CreateCategories();
         await CreateStatuses();
         await CreateUsers();
@@ -29,6 +31,21 @@ else
         sampleDataCreated = true;
     }
 
+    private async Task CreateAnswers()
+    {
+        var questions = await _questionData.GetAllQuestions();
+        foreach (var question in questions)
+        {
+            foreach (var answer in QuestionAppUI.Data.SampleData.SampleAnswers)
+            {
+                answer.QuestionId = question.Id;
+                answer.Author = await _userData.GetUserByIdentifier(answer.Author.ObjectIdentifier);
+                await _answerData.CreateAnswer(answer);
+            }
+        }
+        return;
+    }
+    
     private async Task CreateQuestions()
     {
         var questions = await _questionData.GetAllQuestions();

@@ -1,10 +1,12 @@
 ﻿@page "/Details/{Id}"
+@using Radzen.Blazor
 @inject NavigationManager navManager
 @inject AuthenticationStateProvider authProvider
 
 @inject IUserData userData
 @inject IQuestionData questionData
 @inject IStatusData statusData
+@inject IAnswerData answerData
 
 <h1 class="page-heading text-uppercase mb-4">Question details</h1>
 
@@ -40,6 +42,57 @@
         }
     </div>
 </div>
+
+<div class="row justify-content-center detail-form">
+    <div class="input-section col-xl-8 form-layout form-layout-editor">
+        <div class="answer-placeholder">Add your answer</div>
+        <RadzenHtmlEditor class="@GetEditorClass()" @bind-Value=@inputAnswer UploadUrl="upload/image" @onclick="ChangeEditorSize">
+            <RadzenHtmlEditorUndo />
+            <RadzenHtmlEditorRedo />
+            <RadzenHtmlEditorSeparator />
+            <RadzenHtmlEditorBold />
+            <RadzenHtmlEditorItalic />
+            <RadzenHtmlEditorUnderline />
+            <RadzenHtmlEditorStrikeThrough />
+            <RadzenHtmlEditorSeparator />
+            <RadzenHtmlEditorColor />
+            <RadzenHtmlEditorBackground />
+            <RadzenHtmlEditorRemoveFormat/>
+        </RadzenHtmlEditor>
+        <div class="right-children">
+            <button class="btn btn-main btn-md text-uppercase" type="button" @onclick="SaveAnswer">Suggest</button>
+        </div>
+    </div>
+</div>
+
+@if (answers != null && answers.Any())
+{
+    foreach (var answer in answers)
+    {
+        <div class="row justify-content-center detail-form answer-detail">
+            <div class="col-xl-8 col-lg-10 form-layout">
+                <div class="row justify-content-start answer-header">
+                    <div class="col-sm-3 answer-author">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+                        </svg>
+                        <a href="#">@GetAnswerAutorName(answer)</a>
+                    </div>
+                    <div class="col-4 answer-date">
+                        22.12.2021
+                    </div>
+                </div>
+                <input type="checkbox" class="read-more-checker" id="read-more-checker" />
+                <div class="limiter">
+                    <div class="fw-bold mb-2">@((MarkupString)answer.Answer)</div>
+                    <div class="bottom"></div>
+                </div>
+                <label for="read-more-checker" class="read-more-button"></label>
+            </div>
+        </div>
+    }
+}
 
 @if (question?.Status is not null)
 {
@@ -128,14 +181,33 @@
     private QuestionModel question;
 
     private List<StatusModel> statuses;
+    private List<AnswerModel> answers;
     private string settingStatus;
     private string urlText = "";
+
+    private string inputAnswer = "";
+    bool isEditorClicked = false;
 
     protected async override Task OnInitializedAsync()
     {
         question = await questionData.GetQuestion(Id);
         loggedUser = await authProvider.GetUserFromAuth(userData);
         statuses = await statusData.GetAllStatuses();
+        answers = await answerData.GetQuestionAnswers(question.Id);
+        answers = answers.Where(x => x.IsApproved || x.Author.Id == loggedUser?.Id).ToList();
+
+    }
+
+    private void ChangeEditorSize()
+    {
+        if (string.IsNullOrEmpty(inputAnswer))
+            isEditorClicked = true;
+
+    }
+
+    private string GetEditorClass()
+    {
+        return isEditorClicked ? "radzen-editor radzen-editor-clicked" : "radzen-editor";
     }
 
     private async Task CompleteSetStatus()
@@ -246,5 +318,46 @@
         };
 
         return output;
+    }
+
+    private async Task SaveAnswer()
+    {
+        if (loggedUser == null)
+        {
+            navManager.NavigateTo(Urls.LoginPath, true);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(inputAnswer))
+            return;
+
+        var cachedUserAns = answers.FirstOrDefault(x => x.Author.Id == loggedUser.Id);
+        if (cachedUserAns != null)
+        {
+            answers.Remove(cachedUserAns);
+            cachedUserAns.Answer = inputAnswer;
+            answers.Add(cachedUserAns);
+            await answerData.UpdateAnswer(cachedUserAns);
+            inputAnswer = "";
+            return;
+        }
+
+        var userAnswer = new AnswerModel()
+        {
+            Answer = inputAnswer,
+            Author = loggedUser,
+            QuestionId = question.Id
+        };
+
+        answers.Add(userAnswer);
+        await answerData.CreateAnswer(userAnswer);
+        inputAnswer = "";
+    }
+
+    private string GetAnswerAutorName(AnswerModel answer)
+    {
+        return @answer.Author.Id != loggedUser?.Id 
+        ? answer.Author.DisplayName 
+        : "Your Answer";
     }
 }

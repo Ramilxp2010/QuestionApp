@@ -322,6 +322,9 @@ a, .btn-link {
     background-color:#FFFFFF;
     border-radius:15px;
     padding:2rem;
+    padding-top:1rem;
+    padding-bottom:1rem;
+    margin:5px;
 }
 
 .form-layout a {
@@ -645,4 +648,85 @@ a, .btn-link {
 
 .bnt-status-dismissed:hover {
     color: #F9C30B;
+}
+
+.answer-detail {
+    margin-top:10px;
+}
+.right-children {
+    margin-top:10px;
+    display: flex;
+    justify-content: right;
+}
+
+.radzen-editor {
+    background-color:aliceblue;
+    border-radius:10px;
+    padding:5px;
+}
+.radzen-editor-clicked {
+    height:200px;
+}
+.answer-placeholder {
+    color:gray;
+}
+.form-layout-editor {
+    padding-top:1rem;
+    padding-bottom:1rem;
+}
+.answer-header {
+    padding-bottom:1rem;
+}
+
+.answer-author {
+}
+
+.answer-date {
+    color: #70737b;
+    padding-left:0;
+}
+
+.limiter {
+    max-height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+    .limiter .bottom {
+        position: absolute; /* Если прыгает - можно попробовать sticky */
+        bottom: 0;
+        background: linear-gradient( to bottom, rgb(193 193 193 / 0%), rgb(193 193 193)100%);
+        width: 100%;
+        height: 15px;
+        opacity: 1;
+        transition: 0.3s;
+    }
+
+.read-more-checker {
+    opacity: 0;
+    position: absolute;
+}
+
+    .read-more-checker:checked ~ .limiter {
+        max-height: none;
+    }
+
+        .read-more-checker:checked ~ .limiter .bottom {
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+    .read-more-checker ~ .read-more-button:before {
+        content: "See more...";
+    }
+
+    .read-more-checker:checked ~ .read-more-button:before {
+        content: "See less...";
+    }
+
+.read-more-button {
+    cursor: pointer;
+    display: inline-block;
+    color: #777;
+    text-decoration: underline;
 }
