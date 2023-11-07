@@ -113,7 +113,7 @@
     private List<StatusModel> statuses;
     private QuestionModel archivingQuestion;
 
-    private string selectedCategory = "All";
+    private HashSet<string> selectedCategories = new HashSet<string> { "All" };
     private string selectedStatus = "All";
     private string searchText = "";
     bool isSortedByNew = true;
@@ -146,10 +146,10 @@
 
     private async Task LoadFilterState()
     {
-        var stringResults = await sessionStorage.GetAsync<string>(nameof(selectedCategory));
-        selectedCategory = stringResults.Success ? stringResults.Value : "All";
+        var categoriesResults = await sessionStorage.GetAsync<HashSet<string>>(nameof(selectedCategories));
+        selectedCategories = categoriesResults.Success ? categoriesResults.Value : new HashSet<string>() { "All" };
 
-        stringResults = await sessionStorage.GetAsync<string>(nameof(selectedStatus));
+        var stringResults = await sessionStorage.GetAsync<string>(nameof(selectedStatus));
         selectedStatus = stringResults.Success ? stringResults.Value : "All";
 
         stringResults = await sessionStorage.GetAsync<string>(nameof(searchText));
@@ -161,7 +161,7 @@
 
     private async Task SaveFillterState()
     {
-        await sessionStorage.SetAsync(nameof(selectedCategory), selectedCategory);
+        await sessionStorage.SetAsync(nameof(selectedCategories), selectedCategories);
         await sessionStorage.SetAsync(nameof(selectedStatus), selectedStatus);
         await sessionStorage.SetAsync(nameof(searchText), searchText);
         await sessionStorage.SetAsync(nameof(isSortedByNew), isSortedByNew);
@@ -170,9 +170,13 @@
     private async Task FilterQuestions()
     {
         var output = await questionData.GetAllApprovedQuestions();
-        if (selectedCategory != "All")
+        if (selectedCategories.Count == 1 && selectedCategories.First() != "All")
         {
-            output = output.Where(x => x.Categories.Any(c => c.Name == selectedCategory)).ToList();
+            output = output.Where(x => x.Categories.Any(c => c.Name == selectedCategories.First())).ToList();
+        }
+        else if (selectedCategories.Count > 1)
+        {
+            output = output.Where(question => selectedCategories.All(selected => question.Categories.Any(x => x.Name == selected))).ToList();
         }
 
         if (selectedStatus != "All")
@@ -182,8 +186,8 @@
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
-            output = output.Where(x => x.Question.Contains(searchText, StringComparison.CurrentCultureIgnoreCase) ||
-            x.Description.Contains(searchText, StringComparison.CurrentCultureIgnoreCase))
+            output = output.Where(x => !string.IsNullOrWhiteSpace(x.Question) && x.Question.Contains(searchText, StringComparison.CurrentCultureIgnoreCase) ||
+            !string.IsNullOrWhiteSpace(x.Description) && x.Description.Contains(searchText, StringComparison.CurrentCultureIgnoreCase))
             .ToList();
         }
 
@@ -226,7 +230,14 @@
 
     private async Task OnCategoryClick(string category = "All")
     {
-        selectedCategory = category;
+        if (selectedCategories.Count() == 1 && selectedCategories.First() == "All")
+            selectedCategories.Remove("All");
+
+        if (category == "All")
+            selectedCategories = new HashSet<string>() { "All" };
+        else if (!selectedCategories.Add(category))
+            selectedCategories.Remove(category);
+
         await FilterQuestions();
     }
 
@@ -325,7 +336,7 @@
 
     private string GetSelectedCategiryClass(string category = "All")
     {
-        return category == selectedCategory ? "selected-category" : "";
+        return selectedCategories.Any(x => x == category) ? "selected-category" : "";
     }
 
     private string GetSelectedStatusClass(string status = "All")

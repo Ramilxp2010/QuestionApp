@@ -2,6 +2,7 @@
 @attribute [Authorize(Roles = "Admin")]
 @inject IQuestionData questionData
 @inject IUserData userData
+@inject ICategoryData categoryData
 @inject NavigationManager navManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -44,11 +45,42 @@
                         <span class="oi oi-pencil submission-edit-icon" @onclick="(()=>EditTitle(s))"></span>
                     }
                 </div>
-                @foreach (var category in s.Categories)
+                @if (currentEditingCategories == s.Id)
                 {
-                    <div>
-                        @category.Name
+                    <div class="card">
+                        <div class="card-body">
+                            @foreach (var c in allCategories)
+                            {
+                                <div class="chip chip-md white-text example z-depth-2 mr-0 @GetTagClass(c)" @onclick="(() => ClickTag(c))">
+                                    <i class="fas fa-tags"></i>
+                                    &nbsp;&nbsp;@c.Name
+                                    <i class="close white-text fas fa-times"></i>
+                                </div>
+                            }
+                        </div>
                     </div>
+                    <button class="btn" type="button" @onclick="(() => SaveCategories(s))">
+                        <span class="oi oi-check submission-edit-approve"></span>
+                    </button>
+                    <button type="button" class="btn" @onclick="(()=> currentEditingCategories = string.Empty)">
+                        <span class="oi oi-x submission-edit-reject"></span>
+                    </button>
+                }
+                else
+                {
+                    <div class="card">
+                        <div class="card-body">
+                            @foreach (var c in s.Categories)
+                            {
+                                <div class="chip chip-md white-text example z-depth-2 mr-0 @GetTagClass(s, c)">
+                                    <i class="fas fa-tags"></i>
+                                    &nbsp;&nbsp;@c.Name
+                                    <i class="close white-text fas fa-times"></i>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <span class="oi oi-pencil submission-edit-icon" @onclick="(()=>EditCategories(s))"></span>
                 }
                 <div>
                     @s.Author.DisplayName
@@ -79,11 +111,15 @@
 
 @code {
     private List<QuestionModel> allQuestions;
+    private List<CategoryModel> allCategories;
+
     private QuestionModel editingModel;
     private string currentEditingTitle = "";
     private string editedTitle = "";
     private string currentEditingDescription = "";
     private string editedDescription = "";
+    private string currentEditingCategories = "";
+    private HashSet<string> editedCategories = new HashSet<string>();
 
     protected async override Task OnInitializedAsync()
     {
@@ -91,6 +127,7 @@
             .GetAuthenticationStateAsync();
         var user = authState.User;
         allQuestions = await questionData.GetAllQuestionsForApprove();
+        allCategories = await categoryData.GetAllCategoies();
     }
 
     private async Task ApproveQuestion(QuestionModel question)
@@ -139,6 +176,43 @@
     {
         currentEditingDescription = string.Empty;
         question.Description = editedDescription;
+        await questionData.UpdateQuestion(question);
+    }
+
+    private void EditCategories(QuestionModel question)
+    {
+        editingModel = question;
+        editedCategories = question.Categories.Select(x=>x.Id).ToHashSet<string>();
+        currentEditingTitle = "";
+        currentEditingDescription = "";
+        currentEditingCategories = question.Id;
+    }
+
+    private string GetTagClass(CategoryModel category)
+    {
+        return editedCategories.Contains(category.Id)
+        ? "success-color"
+        : "";
+    }
+
+    private string GetTagClass(QuestionModel question, CategoryModel category)
+    {
+        return question.Categories.Any(x => x.Id == category.Id)
+        ? "success-color"
+        : "";
+    }
+
+    private void ClickTag(CategoryModel category)
+    {
+        if (!editedCategories.Add(category.Id))
+            editedCategories.Remove(category.Id);
+    }
+
+    private async Task SaveCategories(QuestionModel question)
+    {
+        currentEditingCategories = null;
+        question.Categories = allCategories.Where(x => editedCategories.Contains(x.Id)).ToList();
+        editedCategories.Clear();
         await questionData.UpdateQuestion(question);
     }
 }
