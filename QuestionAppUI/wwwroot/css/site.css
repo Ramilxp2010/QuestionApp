@@ -683,7 +683,7 @@ a, .btn-link {
     padding-left: 0;
 }
 
-.answer-count {
+.question-separator {
     color: #A9A9A9;
     border-bottom: 2px #A9A9A9 solid;
     margin-top: 10px;
@@ -736,7 +736,6 @@ a, .btn-link {
 }
 
 .card {
-    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
     border: 0;
     font-weight: 400;
 }
