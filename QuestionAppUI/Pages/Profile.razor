@@ -39,9 +39,12 @@
             <p class="my-submission-text">
                 Total Voted: @s.UserVotes?.Count
             </p>
-            <p class="my-submission-text">
-                @s.Category.Name
-            </p>
+            @foreach(var category in s.Categories)
+            {
+                <p class="my-submission-text">
+                    @category.Name
+                </p>
+            }
             <p class="my-submission-text">
                 @s.Description
             </p>
@@ -76,9 +79,12 @@
             <p class="my-submission-text">
                 Total Voted: @s.UserVotes?.Count
             </p>
-            <p class="my-submission-text">
-                @s.Category.Name
-            </p>
+            foreach (var category in s.Categories)
+            {
+                <p class="my-submission-text">
+                    @category.Name
+                </p>
+            }
             <p class="my-submission-text">
                 @s.Description
             </p>
@@ -113,9 +119,12 @@
             <p class="my-submission-text">
                 Total Voted: @s.UserVotes?.Count
             </p>
-            <p class="my-submission-text">
-                @s.Category.Name
-            </p>
+            foreach (var category in s.Categories)
+            {
+                <p class="my-submission-text">
+                    @category.Name
+                </p>
+            }
             <p class="my-submission-text">
                 @s.Description
             </p>
@@ -150,9 +159,12 @@
             <p class="my-submission-text">
                 Total Voted: @s.UserVotes?.Count
             </p>
-            <p class="my-submission-text">
-                @s.Category.Name
-            </p>
+            foreach (var category in s.Categories)
+            {
+                <p class="my-submission-text">
+                    @category.Name
+                </p>
+            }
             <p class="my-submission-text">
                 @s.Description
             </p>

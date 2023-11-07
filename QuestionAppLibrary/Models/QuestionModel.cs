@@ -12,7 +12,7 @@
 
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
-        public CategoryModel Category { get; set; }
+        public List<CategoryModel> Categories { get; set; }
 
         public StatusModel Status { get; set; }
 

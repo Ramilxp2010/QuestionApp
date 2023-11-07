@@ -9,9 +9,8 @@ namespace QuestionAppUI.Models
         public string Question { get; set; }
 
         [Required]
-        [MinLength(1)]
-        [Display(Name = "Category")]
-        public string CategoryId { get; set; }
+        [Display(Name = "Categories")]
+        public HashSet<string> CategoryIds { get; set; } = new HashSet<string>();
 
         [MaxLength(500)]
         public string Description { get; set; }

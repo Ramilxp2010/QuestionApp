@@ -25,19 +25,20 @@
                     <div class="input-description">Text your question</div>
                     <InputTextArea Text class="form-control" id="question-text" @bind-Value="questionModel.Question"></InputTextArea>
                 </div>
-                <div >
+                <div>
                     <label  class="form-label fw-bold text-uppercase" for="category">Category</label>
                     <div class="input-description">Choose one category</div>
-                    <div class="col-lg-8">
-                        <CustomInputRadioGroup id="category" @bind-Value="questionModel.CategoryId">
+                    <div class="card">
+                        <div class="card-body">
                             @foreach (var c in categories)
                             {
-                                <div class="radio-item-group">
-                                    <InputRadio Value="@c.Id" id="@c.Id" />
-                                    <label for="@c.Id">@c.Name - @c.Description</label>
+                                <div class="chip chip-md white-text example z-depth-2 mr-0 @GetTagClass(c)" @onclick="(() => ClickTag(c))">
+                                    <i class="fas fa-tags"></i>
+                                    &nbsp;&nbsp;@c.Name
+                                    <i class="close white-text fas fa-times"></i>
                                 </div>
                             }
-                        </CustomInputRadioGroup>
+                        </div>
                     </div>
                 </div>
                 <div class="input-section">
@@ -73,21 +74,34 @@
     private async Task CreateQuestion()
     {
         QuestionModel question = new QuestionModel()
-            {
-                Question = questionModel.Question,
-                Description = questionModel.Description,
-                Author = new BasicUserModel(loggedUser),
-                Category = categories.Where(x => x.Id == questionModel.CategoryId).FirstOrDefault()
-            };
-
-        if (question.Category is null)
         {
-            questionModel.CategoryId = string.Empty;
+            Question = questionModel.Question,
+            Description = questionModel.Description,
+            Author = new BasicUserModel(loggedUser),
+            Categories = categories.Where(x => questionModel.CategoryIds.Any(c=>c == x.Id)).ToList()
+        };
+
+        if (question.Categories is null)
+        {
+            questionModel.CategoryIds = new HashSet<string>();
             return;
         }
 
         await questionData.CreateQuestion(question);
         question = null;
         ClosePage();
+    }
+
+    private string GetTagClass(CategoryModel category)
+    {
+        return questionModel.CategoryIds.Contains(category.Id)
+        ? "success-color"
+        : "";
+    }
+
+    private void ClickTag(CategoryModel category)
+    {
+        if (!questionModel.CategoryIds.Add(category.Id))
+            questionModel.CategoryIds.Remove(category.Id);
     }
 }
