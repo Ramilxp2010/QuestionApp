@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.IdentityModel.Tokens;
 using QuestionAppUI.Authentication;
+using QuestionAppUI.Toaster;
+using Radzen;
 using System.Text;
 
 namespace QuestionAppUI
@@ -33,6 +35,7 @@ namespace QuestionAppUI
             builder.Services.AddSingleton<IUserData, MongoUserData>();
             builder.Services.AddSingleton<IQuestionData, MongoQuestionData>();
             builder.Services.AddSingleton<IAnswerData, MongoAnswerData>();
+            builder.Services.AddSingleton<ToasterService>();
 
         }
     }

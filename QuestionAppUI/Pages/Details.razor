@@ -67,7 +67,33 @@
             <RadzenHtmlEditorRemoveFormat />
         </RadzenHtmlEditor>
         <div class="right-children">
-            <button class="btn btn-main btn-md text-uppercase" type="button" @onclick="SaveAnswer">Suggest</button>
+            @if (!UserHasAnswer())
+            {
+                <button class="btn btn-primary" type="button" data-bs-dismiss="modal" @onclick="SaveAnswer">Save</button>
+            }
+            else
+            {
+                <button class="btn btn-main btn-md text-uppercase" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                    Suggest
+                </button>
+            }
+        </div>
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <p class="modal-title fs-5" id="staticBackdropLabel">Your answer will be changed</p>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure edit your answer?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button class="btn btn-primary" type="button" data-bs-dismiss="modal" @onclick="SaveAnswer">Save</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -194,6 +220,9 @@
 
     private string inputAnswer = "";
     bool isEditorClicked = false;
+
+    [Inject] private ToasterService? _toasterService { get; set; }
+    private ToasterService toasterService => _toasterService!;
 
     protected async override Task OnInitializedAsync()
     {
@@ -358,9 +387,11 @@
         {
             answers.Remove(cachedUserAns);
             cachedUserAns.Answer = inputAnswer;
+            cachedUserAns.CreateDate = DateTime.Now;
             answers.Add(cachedUserAns);
             await answerData.UpdateAnswer(cachedUserAns);
             inputAnswer = "";
+            toasterService.AddToast(Toast.CreateToastAlert("Your Answer was updated", 3000));
             return;
         }
 
@@ -368,12 +399,15 @@
         {
             Answer = inputAnswer,
             Author = loggedUser,
+            CreateDate = DateTime.Now,
             QuestionId = question.Id
         };
 
         answers.Add(userAnswer);
         await answerData.CreateAnswer(userAnswer);
         inputAnswer = "";
+
+        toasterService.AddToast(Toast.CreateToastAlert("Your Answer was added", 3000));
     }
 
     private string GetAnswerAutorName(AnswerModel answer)
@@ -381,5 +415,10 @@
         return @answer.Author.Id != loggedUser?.Id 
         ? answer.Author.DisplayName 
         : "Your Answer";
+    }
+
+    private bool UserHasAnswer()
+    {
+        return answers != null && answers.Any(x => x.Author.Id == loggedUser?.Id);
     }
 }
