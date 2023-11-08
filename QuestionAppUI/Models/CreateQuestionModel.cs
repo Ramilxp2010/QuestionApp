@@ -2,7 +2,7 @@
 
 namespace QuestionAppUI.Models
 {
-    public class CreateQuestionModel
+    public class QuestionVM
     {
         [Required]
         [MaxLength(100)]
