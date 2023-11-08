@@ -55,6 +55,19 @@
                                         class="btn question-entry-text-category btn-archive">
                                         Archive
                                     </button>
+                                    <button @onclick="(()=> GoToEdit(question.Id))"
+                                        class="btn question-entry-text-category btn-archive">
+                                        Edit
+                                    </button>
+                                </AuthorizeView>
+                                <AuthorizeView Roles="User">
+                                    @if (question?.Author.Id == loggedUser?.Id)
+                                    {
+                                        <button @onclick="(()=> GoToEdit(question.Id))"
+                                                  class="btn question-entry-text-category btn-archive">
+                                            Edit
+                                        </button>
+                                    }
                                 </AuthorizeView>
                             </div>
                         }
@@ -343,4 +356,10 @@
     {
         return status == selectedStatus ? "selected-status" : "";
     }
+
+    private void GoToEdit(string questionId)
+    {
+        navManager.NavigateTo($"/Edit/{questionId}");
+    }
+
 }

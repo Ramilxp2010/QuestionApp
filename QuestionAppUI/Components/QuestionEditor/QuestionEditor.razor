@@ -1,0 +1,45 @@
+﻿<div class="row justify-content-center create-form">
+    <div class="col-xl-8 col-lg-10 form-layout">
+        <div class="close-btn-section">
+            <button class="btn btn-close" @onclick="ClosePage"></button>
+        </div>
+        @if (categories is not null)
+        {
+            <EditForm Model="questionVM" OnValidSubmit="SaveQuestion">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="input-section">
+                    <label class="form-label fw-bold text-uppercase" for="question-text">Question</label>
+                    <div class="input-description">Text your question</div>
+                    <InputTextArea Text class="form-control" id="question-text" @bind-Value="questionVM.Question"></InputTextArea>
+                </div>
+                <div class="question-separator"></div>
+                <div>
+                    <label class="form-label fw-bold text-uppercase" for="category">Category</label>
+                    <div class="input-description">Choose one category</div>
+                    <div class="card">
+                        <div class="card-body">
+                            @foreach (var c in categories)
+                            {
+                                <div class="chip chip-md white-text example z-depth-2 mr-0 @GetTagClass(c)" @onclick="(() => ClickTag(c))">
+                                    <i class="fas fa-tags"></i>
+                                    &nbsp;&nbsp;@c.Name
+                                    <i class="close white-text fas fa-times"></i>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="question-separator"></div>
+                <div class="input-section">
+                    <label class="form-label fw-bold text-uppercase" for="description-text">Description</label>
+                    <div class="input-description">Text your question description</div>
+                    <InputTextArea class="form-control" id="description-text" @bind-Value="questionVM.Description"></InputTextArea>
+                </div>
+                <div class="center-children">
+                    <button class="btn btn-main btn-lg text-uppercase" type="submit">Suggest</button>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>

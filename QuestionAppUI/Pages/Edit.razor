@@ -1,0 +1,93 @@
+﻿@page "/Edit/{Id}"
+@attribute [Authorize]
+
+@using QuestionAppUI.Components
+@using QuestionAppUI.Models;
+
+@inject ICategoryData categoryData
+@inject IQuestionData questionData
+@inject IUserData userData
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authProvider
+
+<h1 class="page-heading text-uppercase mb-4">Edit question</h1>
+
+<AuthorizeView Roles="User">
+    @if (question?.Author.Id == loggedUser?.Id)
+    {
+        <QuestionEditor EditableQuestion="@questionVM" OnCloseCallback="ClosePage" OnSubmitCallback="CreateQuestion">
+        </QuestionEditor>
+    }
+    else
+    {
+        <div class="row justify-content-center">
+            <div class="col-xl-8 col-lg-10 form-layout">
+                <div class="row">
+                    <div class="col-11">
+                        <p>
+                            You can't edit this question!
+                        </p>
+                    </div>
+                    <div class="col-1 close-btn-section">
+                        <button class="btn btn-close" @onclick="ClosePage"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</AuthorizeView>
+
+<AuthorizeView Roles="Admin">
+    <QuestionEditor EditableQuestion="@questionVM" OnCloseCallback="ClosePage" OnSubmitCallback="CreateQuestion">
+    </QuestionEditor>
+</AuthorizeView>
+
+
+@code {
+
+    [Parameter]
+    public string Id { get; set; }
+
+    private QuestionVM questionVM = new ();
+    private QuestionModel question;
+    private List<CategoryModel> categories;
+    private UserModel loggedUser;
+
+    protected async override Task OnInitializedAsync()
+    {
+        question = await questionData.GetQuestion(Id);
+        categories = await categoryData.GetAllCategoies();
+
+        loggedUser = await authProvider.GetUserFromAuth(userData);
+
+        if (question != null)
+        {
+            questionVM.Question = question.Question;
+            questionVM.Description = question.Description;
+            questionVM.CategoryIds = question.Categories.Select(x => x.Id).ToHashSet<string>();
+        }
+    }
+
+    private void ClosePage()
+    {
+        navManager.NavigateTo("/");
+    }
+
+    private async Task CreateQuestion(QuestionVM editedQuestionVM)
+    {
+         question.Question = editedQuestionVM.Question;
+         question.Description = editedQuestionVM.Description;
+         question.Author = new BasicUserModel(loggedUser);
+         question.Categories = categories.Where(x => editedQuestionVM.CategoryIds.Any(c => c == x.Id)).ToList();
+
+        if (question.Categories is null)
+        {
+            editedQuestionVM.CategoryIds = new HashSet<string>();
+            return;
+        }
+
+        await questionData.UpdateQuestion(question);
+        question = null;
+        ClosePage();
+    }
+}

@@ -10,54 +10,11 @@
 
 <h1 class="page-heading text-uppercase mb-4">Make a question</h1>
 
-<div class="row justify-content-center create-form">
-    <div class="col-xl-8 col-lg-10 form-layout">
-        <div class="close-btn-section">
-            <button class="btn btn-close" @onclick="ClosePage"></button>
-        </div>
-        @if (categories is not null)
-        {
-            <EditForm Model="questionModel" OnValidSubmit="CreateQuestion">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
-                <div class="input-section">
-                    <label class="form-label fw-bold text-uppercase" for="question-text">Question</label>
-                    <div class="input-description">Text your question</div>
-                    <InputTextArea Text class="form-control" id="question-text" @bind-Value="questionModel.Question"></InputTextArea>
-                </div>
-                <div class="question-separator"></div>
-                <div>
-                    <label  class="form-label fw-bold text-uppercase" for="category">Category</label>
-                    <div class="input-description">Choose one category</div>
-                    <div class="card">
-                        <div class="card-body">
-                            @foreach (var c in categories)
-                            {
-                                <div class="chip chip-md white-text example z-depth-2 mr-0 @GetTagClass(c)" @onclick="(() => ClickTag(c))">
-                                    <i class="fas fa-tags"></i>
-                                    &nbsp;&nbsp;@c.Name
-                                    <i class="close white-text fas fa-times"></i>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
-                <div class="question-separator"></div>
-                <div class="input-section">
-                    <label class="form-label fw-bold text-uppercase" for="description-text">Description</label>
-                    <div class="input-description">Text your question description</div>
-                    <InputTextArea class="form-control" id="description-text" @bind-Value="questionModel.Description"></InputTextArea>
-                </div>
-                <div class="center-children">
-                    <button class="btn btn-main btn-lg text-uppercase" type="submit">Suggest</button>
-                </div>
-            </EditForm>
-        }
-    </div>
-</div>
+<QuestionEditor EditableQuestion="@questionVM" OnCloseCallback="ClosePage" OnSubmitCallback="CreateQuestion">
+</QuestionEditor>
 
 @code {
-    private CreateQuestionModel questionModel = new();
+    private QuestionVM questionVM = new();
     private List<CategoryModel> categories;
     private UserModel loggedUser;
 
@@ -73,37 +30,24 @@
         navManager.NavigateTo("/");   
     }
 
-    private async Task CreateQuestion()
+    private async Task CreateQuestion(QuestionVM editedQuestionVM)
     {
         QuestionModel question = new QuestionModel()
         {
-            Question = questionModel.Question,
-            Description = questionModel.Description,
+            Question = editedQuestionVM.Question,
+            Description = editedQuestionVM.Description,
             Author = new BasicUserModel(loggedUser),
-            Categories = categories.Where(x => questionModel.CategoryIds.Any(c=>c == x.Id)).ToList()
+            Categories = categories.Where(x => editedQuestionVM.CategoryIds.Any(c=>c == x.Id)).ToList()
         };
 
         if (question.Categories is null)
         {
-            questionModel.CategoryIds = new HashSet<string>();
+            editedQuestionVM.CategoryIds = new HashSet<string>();
             return;
         }
 
         await questionData.CreateQuestion(question);
         question = null;
         ClosePage();
-    }
-
-    private string GetTagClass(CategoryModel category)
-    {
-        return questionModel.CategoryIds.Contains(category.Id)
-        ? "success-color"
-        : "";
-    }
-
-    private void ClickTag(CategoryModel category)
-    {
-        if (!questionModel.CategoryIds.Add(category.Id))
-            questionModel.CategoryIds.Remove(category.Id);
     }
 }

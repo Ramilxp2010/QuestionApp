@@ -1,10 +1,8 @@
 ﻿@using QuestionAppUI.Authentication;
-@inject AuthenticationStateProvider authProvider
 @inject NavigationManager navManager
 
 <AuthorizeView Roles="Admin">
     <a class="login-link" href="/AdminApproval">
-        Admin   
     </a>
 </AuthorizeView>
 <AuthorizeView>
