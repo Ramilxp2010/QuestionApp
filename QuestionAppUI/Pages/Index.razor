@@ -31,61 +31,48 @@
         @if (questions is not null)
         {
             <Virtualize Items="@questions" Context="question" OverscanCount="10">
-                <div class="question-entry">
-                    <div class="@GetVoteClass(question)" @onclick="(()=>UpVote(question))">
-                        <div class="text-uppercase">@GetUpvoteTopText(question)</div>
-                        <span class="oi oi-caret-top" style="font-size: 3rem;"></span>
-                        <div class="text-uppercase">@GetUpvoteBottomText(question)</div>
-                    </div>
-                    <div class="question-entry-text">
-                        <div class="question-entry-text-title" @onclick="(()=> OpenDetails(question))">
-                            @question.Question
+                <div class="card mt-4">
+                    <div class="card-header question-card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <span class="material-icons">&#xe853;</span>
+                                <div style="align-items: flex-end">
+                                    <a class="question-card-header-user" href="#">@question.Author.DisplayName</a>
+                                </div>
+                                <div class="question-card-header-date" style="align-items: flex-end">@question.DateCreated.ToString("dd.MM.yyyy")</div>
+                            </div>
+                            <div class="d-flex">
+                                <span class="material-icons more-icon">&#xe5d3;</span>
+                            </div>
                         </div>
-                        @if (archivingQuestion == null || archivingQuestion.Id != question.Id)
-                        {
-                            <div class="question-entry-bottom">
-                                @foreach (var category in question.Categories)
-                                {
-                                    <div class="question-entry-text-category" @onclick="(()=> OpenDetails(question))">
-                                        @category.Name
-                                    </div>
-                                }
-                                <AuthorizeView Roles="Admin">
-                                    <button @onclick="(()=> archivingQuestion = question)" 
-                                        class="btn question-entry-text-category btn-archive">
-                                        Archive
-                                    </button>
-                                    <button @onclick="(()=> GoToEdit(question.Id))"
-                                        class="btn question-entry-text-category btn-archive">
-                                        Edit
-                                    </button>
-                                </AuthorizeView>
-                                <AuthorizeView Roles="User">
-                                    @if (question?.Author.Id == loggedUser?.Id)
-                                    {
-                                        <button @onclick="(()=> GoToEdit(question.Id))"
-                                                  class="btn question-entry-text-category btn-archive">
-                                            Edit
-                                        </button>
-                                    }
-                                </AuthorizeView>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="question-entry-bottom">
-                                <button class="btn btn-archive btn-archive-confirm" @onclick="ArchiveQuestion">
-                                    confirm
-                                </button>
-                                <button class="btn btn-archive btn-archive-reject" @onclick="(()=>archivingQuestion = null)">
-                                    cancel
-                                </button>
-                            </div>
-                        }
                     </div>
-                    <div class="question-entry-status @GetQuestionStatusClass(question)">
-                        <div class="question-entry-status-text">
-                            @question.Status?.Name
+                    <div class="card-body">
+                        <p class="card-text">
+                            @question.Question
+                        </p>
+                        <div class="question-card-footer">
+                            @foreach (var category in question.Categories)
+                            {
+                                <div class="question-card-footer-tag" @onclick="(()=> OpenDetails(question))">
+                                    @category.Name
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex">
+                                <span class="material-icons question-card-footer-left @GetVoteClass(question)" @onclick="(()=>UpVote(question))">&#xe8dc;</span>
+                                <span class="question-card-footer-left">@GetUpvoteTopText(question)</span>
+                                @*<span class="material-icons question-card-footer-left thumb-down-icon-clicked" @onclick="(()=>UpVote(question))">&#xe8db;</span>*@
+                                <span class="material-icons question-card-footer-left material-symbols-outlined">&#xe87d;</span>
+                                @*<span class="material-icons question-card-footer-left favorite-icon-clicked">&#xe87d;</span>*@
+                            </div>
+                            <div class="d-flex">
+                                <span class="material-icons question-card-footer-rigth @GetAnswerMarkClass(question)">&#xe876;</span>
+                                <span class="material-icons question-card-footer-rigth">&#xe8f4;</span>
+                                <p class="mb-0 question-card-footer-rigth">100</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -287,12 +274,7 @@
 
     private string GetUpvoteTopText(QuestionModel question)
     {
-        //TODO
-        return question.UserVotes?.Count > 0
-        ? question.UserVotes?.Count.ToString("00")
-        : question.Author.Id == loggedUser?.Id
-        ? "Awaiting"
-        : "Click To";
+        return question.UserVotes?.Count.ToString("00");
     }
 
     private string GetUpvoteBottomText(QuestionModel question)
@@ -314,18 +296,7 @@
 
     private string GetVoteClass(QuestionModel question)
     {
-        if (question.UserVotes == null || question.UserVotes.Count == 0)
-        {
-            return "question-entry-no-votes";    
-        }
-        else if (question.UserVotes.Contains(loggedUser?.Id))
-        {
-            return "question-entry-voted";
-        }
-        else
-        {
-            return "question-entry-not-voted";
-        }
+        return question.UserVotes.Contains(loggedUser?.Id) ? "thumb-up-icon-clicked" : "thumb-up-icon";
     }
 
     private string GetQuestionStatusClass(QuestionModel question)
@@ -362,4 +333,8 @@
         navManager.NavigateTo($"/Edit/{questionId}");
     }
 
+    private string GetAnswerMarkClass(QuestionModel questionModel)
+    {
+        return questionModel.Author.Id == loggedUser?.Id ? "answer-icon" : "";
+    }
 }
