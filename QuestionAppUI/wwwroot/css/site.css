@@ -743,7 +743,6 @@ a, .btn-link {
 .card-body {
     -ms-flex: 1 1 auto;
     flex: 1 1 auto;
-    padding: 1.25rem;
 }
 
 .chip.chip-md {
@@ -797,14 +796,20 @@ a, .btn-link {
     color: #b0b3bb;
 }
 
+.card {
+    border-radius: 10px;
+}
 .card-header {
-    background-color:white;
-    border-bottom:0;
+    background-color: white;
+    border-bottom: 0;
 }
-.card-body {
-    --bs-card-spacer-y: 10px;
-    padding: 10px 15px;
-}
+    .card-header:first-child {
+        border-radius: 10px;
+    }
+    .card-body {
+        --bs-card-spacer-y: 10px;
+        padding: 10px 1.5rem;
+    }
 
 .question-card-footer {
     display: flex;
@@ -824,11 +829,13 @@ a, .btn-link {
 .question-card-footer-left {
     padding-right: 10px;
     color: #b0b3bb;
+    font-size:14px;
 }
 
 .question-card-footer-rigth {
     padding-left: 10px;
     color: #b0b3bb;
+    font-size: 14px;
 }
 
 .more-icon:hover {
@@ -872,7 +879,7 @@ a, .btn-link {
 .question-card-header-user {
     padding-left: 5px;
     font-weight: 500;
-    color: #444850;
+    color: grey;
     text-decoration: none;
 }
 
@@ -880,3 +887,14 @@ a, .btn-link {
         color: #444850;
         text-decoration: underline;
     }
+
+.question-card-title {
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.question-card-text {
+    font-size: 15px;
+    color: darkslategrey;
+}

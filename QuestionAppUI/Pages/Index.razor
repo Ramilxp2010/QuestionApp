@@ -76,8 +76,11 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <p class="card-text" @onclick="(()=>OpenDetails(question))">
-                            @question.Question
+                        <p class="question-card-title" @onclick="(()=>OpenDetails(question))">
+                            @((MarkupString)question.Question)
+                        </p>
+                        <p class="card-text question-card-text" >
+                            @((MarkupString)question.Description)
                         </p>
                         <div class="question-card-footer">
                             @foreach (var category in question.Categories)
@@ -90,14 +93,14 @@
                     </div>
                     <div class="card-footer">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex">
+                            <div class="d-flex align-items-center">
                                 <span class="material-icons question-card-footer-left @GetVoteClass(question)" @onclick="(()=>UpVote(question))">&#xe8dc;</span>
                                 <span class="question-card-footer-left">@GetUpvoteTopText(question)</span>
                                 @*<span class="material-icons question-card-footer-left thumb-down-icon-clicked" @onclick="(()=>UpVote(question))">&#xe8db;</span>*@
                                 <span class="material-icons question-card-footer-left material-symbols-outlined">&#xe87d;</span>
                                 @*<span class="material-icons question-card-footer-left favorite-icon-clicked">&#xe87d;</span>*@
                             </div>
-                            <div class="d-flex">
+                            <div class="d-flex align-items-center">
                                 <span class="material-icons question-card-footer-rigth @GetAnswerMarkClass(question)">&#xe876;</span>
                                 <span class="material-icons question-card-footer-rigth">&#xe8f4;</span>
                                 <p class="mb-0 question-card-footer-rigth">100</p>
