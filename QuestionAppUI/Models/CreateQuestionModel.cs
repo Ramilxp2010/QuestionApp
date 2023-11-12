@@ -12,7 +12,7 @@ namespace QuestionAppUI.Models
         [Display(Name = "Categories")]
         public HashSet<string> CategoryIds { get; set; } = new HashSet<string>();
 
-        [MaxLength(500)]
+        [MaxLength(1000)]
         public string Description { get; set; }
     }
 }

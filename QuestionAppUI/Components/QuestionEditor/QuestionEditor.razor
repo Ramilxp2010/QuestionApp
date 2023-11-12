@@ -11,7 +11,38 @@
                 <div class="input-section">
                     <label class="form-label fw-bold text-uppercase" for="question-text">Question</label>
                     <div class="input-description">Text your question</div>
-                    <InputTextArea Text class="form-control" id="question-text" @bind-Value="questionVM.Question"></InputTextArea>
+
+                    <RadzenHtmlEditor class="form-control" @bind-Value=@questionVM.Question UploadUrl="upload/image">
+                        <RadzenHtmlEditorUndo />
+                        <RadzenHtmlEditorRedo />
+                        <RadzenHtmlEditorSeparator />
+                        <RadzenHtmlEditorBold />
+                        <RadzenHtmlEditorItalic />
+                        <RadzenHtmlEditorUnderline />
+                        <RadzenHtmlEditorStrikeThrough />
+                        <RadzenHtmlEditorSeparator />
+                        <RadzenHtmlEditorColor />
+                        <RadzenHtmlEditorBackground />
+                        <RadzenHtmlEditorRemoveFormat />
+                    </RadzenHtmlEditor>
+                </div>
+                <div class="question-separator"></div>
+                <div class="input-section">
+                    <label class="form-label fw-bold text-uppercase" for="description-text">Description</label>
+                    <div class="input-description">Text your question description</div>
+                    <RadzenHtmlEditor class="form-control" id="description-text" @bind-Value=@questionVM.Description UploadUrl="upload/image">
+                        <RadzenHtmlEditorUndo />
+                        <RadzenHtmlEditorRedo />
+                        <RadzenHtmlEditorSeparator />
+                        <RadzenHtmlEditorBold />
+                        <RadzenHtmlEditorItalic />
+                        <RadzenHtmlEditorUnderline />
+                        <RadzenHtmlEditorStrikeThrough />
+                        <RadzenHtmlEditorSeparator />
+                        <RadzenHtmlEditorColor />
+                        <RadzenHtmlEditorBackground />
+                        <RadzenHtmlEditorRemoveFormat />
+                    </RadzenHtmlEditor>
                 </div>
                 <div class="question-separator"></div>
                 <div>
@@ -29,12 +60,6 @@
                             }
                         </div>
                     </div>
-                </div>
-                <div class="question-separator"></div>
-                <div class="input-section">
-                    <label class="form-label fw-bold text-uppercase" for="description-text">Description</label>
-                    <div class="input-description">Text your question description</div>
-                    <InputTextArea class="form-control" id="description-text" @bind-Value="questionVM.Description"></InputTextArea>
                 </div>
                 <div class="center-children">
                     <button class="btn btn-main btn-lg text-uppercase" type="submit">Suggest</button>

@@ -4,6 +4,7 @@
 @inject IStatusData statusData
 @inject IQuestionData questionData
 @inject IUserData userData
+@inject IAnswerData answerData
 @inject NavigationManager navManager
 @inject ProtectedSessionStorage sessionStorage
 @inject AuthenticationStateProvider authProvider
@@ -31,7 +32,7 @@
         @if (questions is not null)
         {
             <Virtualize Items="@questions" Context="question" OverscanCount="10">
-                <div class="card mt-4">
+                <div class="card mt-3">
                     <div class="card-header question-card-header">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center">
@@ -41,19 +42,50 @@
                                 </div>
                                 <div class="question-card-header-date" style="align-items: flex-end">@question.DateCreated.ToString("dd.MM.yyyy")</div>
                             </div>
-                            <div class="d-flex">
-                                <span class="material-icons more-icon">&#xe5d3;</span>
+                            <div class="d-flex dropdown">
+                              <span class="dropdown-toggle material-icons more-icon" data-bs-toggle="dropdown">&#xe5d3;</span>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Действие</a></li>
+                                    <li>
+                                        <AuthorizeView Roles="Admin">
+                                            <button @onclick="(()=> GoToEdit(question.Id))"
+                                                    class="btn question-entry-text-category btn-archive dropdown-item">
+                                                Edit
+                                            </button>
+                                        </AuthorizeView>
+                                        <AuthorizeView Roles="User">
+                                            @if (!question.IsRejected && !question.IsAproved && !question.IsArchived && question?.Author.Id == loggedUser?.Id)
+                                            {
+                                                <button @onclick="(()=> GoToEdit(question.Id))"
+                                                        class="btn question-entry-text-category btn-archive dropdown-item">
+                                                    Edit
+                                                </button>
+                                            }
+                                        </AuthorizeView>
+                                    </li>
+                                    <li>
+                                        <AuthorizeView Roles="Admin">
+                                            <button @onclick="(()=> archivingQuestion = question)"
+                                                    class="btn question-entry-text-category btn-archive dropdown-item">
+                                                Archive
+                                            </button>
+                                        </AuthorizeView>
+                                    </li>
+                              </ul>
                             </div>
                         </div>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">
-                            @question.Question
+                        <p class="question-card-title" @onclick="(()=>OpenDetails(question))">
+                            @((MarkupString)question.Question)
+                        </p>
+                        <p class="card-text question-card-text" >
+                            @((MarkupString)question.Description)
                         </p>
                         <div class="question-card-footer">
                             @foreach (var category in question.Categories)
                             {
-                                <div class="question-card-footer-tag" @onclick="(()=> OpenDetails(question))">
+                                <div class="question-card-footer-tag" @onclick="(()=>OnCategoryClick(category.Name))">
                                     @category.Name
                                 </div>
                             }
@@ -61,14 +93,14 @@
                     </div>
                     <div class="card-footer">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex">
+                            <div class="d-flex align-items-center">
                                 <span class="material-icons question-card-footer-left @GetVoteClass(question)" @onclick="(()=>UpVote(question))">&#xe8dc;</span>
                                 <span class="question-card-footer-left">@GetUpvoteTopText(question)</span>
                                 @*<span class="material-icons question-card-footer-left thumb-down-icon-clicked" @onclick="(()=>UpVote(question))">&#xe8db;</span>*@
                                 <span class="material-icons question-card-footer-left material-symbols-outlined">&#xe87d;</span>
                                 @*<span class="material-icons question-card-footer-left favorite-icon-clicked">&#xe87d;</span>*@
                             </div>
-                            <div class="d-flex">
+                            <div class="d-flex align-items-center">
                                 <span class="material-icons question-card-footer-rigth @GetAnswerMarkClass(question)">&#xe876;</span>
                                 <span class="material-icons question-card-footer-rigth">&#xe8f4;</span>
                                 <p class="mb-0 question-card-footer-rigth">100</p>
@@ -112,6 +144,7 @@
     private List<CategoryModel> categories;
     private List<StatusModel> statuses;
     private QuestionModel archivingQuestion;
+    private List<AnswerModel> userAnswers;
 
     private HashSet<string> selectedCategories = new HashSet<string> { "All" };
     private string selectedStatus = "All";
@@ -124,6 +157,7 @@
         statuses = await statusData.GetAllStatuses();
 
         loggedUser = await authProvider.GetUserFromAuth(userData);
+        userAnswers = await answerData.GetUserAnswers(loggedUser?.Id);
     }
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
@@ -335,6 +369,6 @@
 
     private string GetAnswerMarkClass(QuestionModel questionModel)
     {
-        return questionModel.Author.Id == loggedUser?.Id ? "answer-icon" : "";
+        return userAnswers.Any(x => x.QuestionId == questionModel.Id) ? "answered-icon" : "";
     }
 }
