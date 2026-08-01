@@ -22,7 +22,7 @@ namespace QuestionAppUI.Components.QuestionEditor
 
         protected override async Task OnInitializedAsync()
         {
-            categories = await categoryData.GetAllCategoies();
+            categories = await categoryData.GetAllCategories();
         }
 
         private async Task SaveQuestion() 

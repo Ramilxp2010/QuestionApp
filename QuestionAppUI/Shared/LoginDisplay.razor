@@ -2,7 +2,9 @@
 @inject NavigationManager navManager
 
 <AuthorizeView Roles="Admin">
-    <a class="login-link" href="/AdminApproval">Admin Approval</a>
+    <a class="login-link" href="/AdminPanel">Admin Panel</a>
+    <a class="login-link" href="/AdminApproval" style="margin-left:10px;">Admin Approval</a>
+    <a class="login-link" href="/SampleData" style="margin-left:10px;">Seed Data</a>
 </AuthorizeView>
 <AuthorizeView>
     <Authorized>

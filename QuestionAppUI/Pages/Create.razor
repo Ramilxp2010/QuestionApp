@@ -1,4 +1,4 @@
-﻿@page "/Create"
+@page "/Create"
 @attribute [Authorize]
 @using QuestionAppUI.Components
 @using QuestionAppUI.Models;
@@ -20,7 +20,7 @@
 
     protected async override Task OnInitializedAsync()
     {
-        categories = await categoryData.GetAllCategoies();
+        categories = await categoryData.GetAllCategories();
 
         loggedUser = await authProvider.GetUserFromAuth(userData);
     }

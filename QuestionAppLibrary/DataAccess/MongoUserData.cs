@@ -27,6 +27,17 @@
             return result.FirstOrDefault();
         }
 
+        public async Task<UserModel> GetUserByUserName(string userName)
+        {
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                return null;
+            }
+
+            var result = await _users.FindAsync(x => x.UserName == userName);
+            return result.FirstOrDefault();
+        }
+
         public Task CreateUser(UserModel userModel)
         {
             return _users.InsertOneAsync(userModel);

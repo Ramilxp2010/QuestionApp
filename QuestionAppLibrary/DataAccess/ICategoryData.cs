@@ -3,6 +3,6 @@
     public interface ICategoryData
     {
         Task CreateCategory(CategoryModel category);
-        Task<List<CategoryModel>> GetAllCategoies();
+        Task<List<CategoryModel>> GetAllCategories();
     }
 }

@@ -53,7 +53,7 @@
 <div class="row justify-content-center detail-form">
     <div class="col-xl-8 form-layout form-layout-editor">
         <div class="answer-placeholder">Add your answer</div>
-        <RadzenHtmlEditor class="@GetEditorClass()" @bind-Value=@inputAnswer @onclick="ChangeEditorSize">
+        <RadzenHtmlEditor class="@GetEditorClass()" @bind-Value=@inputAnswer UploadUrl="upload/image" @onclick="ChangeEditorSize">
             <RadzenHtmlEditorUndo />
             <RadzenHtmlEditorRedo />
             <RadzenHtmlEditorSeparator />
@@ -355,7 +355,7 @@
                 question.UserVotes.Remove(loggedUser.Id);
             }
 
-            await questionData.UpVoeted(question.Id, loggedUser.Id);
+            await questionData.UpVoted(question.Id, loggedUser.Id);
         }
     }
 

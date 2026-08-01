@@ -9,6 +9,12 @@ namespace QuestionAppLibrary.Models
 
         public string ObjectIdentifier { get; set; }
 
+        public string UserName { get; set; }
+
+        public string PasswordHash { get; set; }
+
+        public string Role { get; set; } = "User";
+
         public string Name { get; set; }
 
         public string LastName { get; set; }
@@ -17,7 +23,8 @@ namespace QuestionAppLibrary.Models
 
         public string Email { get; set; }
 
-        public List<BasicQuestionModel> AutoredQuestions { get; set; } = new();
+        [BsonElement("AutoredQuestions")]
+        public List<BasicQuestionModel> AuthoredQuestions { get; set; } = new();
 
         public List<BasicAnswerModel> AuthoredAnswers { get; set; } = new();
 

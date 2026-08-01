@@ -1,0 +1,249 @@
+@page "/AdminPanel"
+@attribute [Authorize(Roles = "Admin")]
+@using System.Text.RegularExpressions
+@using QuestionAppUI.Components.QuestionEditor
+@using QuestionAppUI.Models
+@using Radzen.Blazor
+
+@inject ICategoryData categoryData
+@inject IStatusData statusData
+@inject IQuestionData questionData
+@inject IAnswerData answerData
+@inject IUserData userData
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authProvider
+@inject ToasterService toasterService
+
+<h1 class="page-heading text-uppercase mb-4">Admin Panel</h1>
+
+<div class="row mb-4">
+    <div class="col-md-8 btn-group">
+        <button class="btn btn-order @ModeClass(PanelMode.Question)" @onclick="(() => SetMode(PanelMode.Question))">
+            Add Question
+        </button>
+        <button class="btn btn-order @ModeClass(PanelMode.Answer)" @onclick="(() => SetMode(PanelMode.Answer))">
+            Add Answer
+        </button>
+    </div>
+    <div class="col-md-4 close-btn-section">
+        <button class="btn btn-close" @onclick="ClosePage"></button>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(statusMessage))
+{
+    <div class="alert alert-success mb-3">@statusMessage</div>
+}
+
+@if (mode == PanelMode.Question)
+{
+    <h2 class="text-uppercase mb-3">Add Question</h2>
+    <QuestionEditor @key="questionEditorKey"
+                    EditableQuestion="@questionVM"
+                    OnCloseCallback="ClosePage"
+                    OnSubmitCallback="SaveQuestion">
+    </QuestionEditor>
+}
+else
+{
+    <div class="row justify-content-center create-form">
+        <div class="col-xl-8 col-lg-10 form-layout">
+            <h2 class="text-uppercase mb-3">Add Answer</h2>
+
+            @if (approvedQuestions is null)
+            {
+                <p>Loading questions...</p>
+            }
+            else if (!approvedQuestions.Any())
+            {
+                <p>No approved questions available. Create a question first.</p>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-uppercase" for="admin-question-select">Question</label>
+                    <select id="admin-question-select" class="form-select" @bind="selectedQuestionId">
+                        <option value="">Select a question</option>
+                        @foreach (var q in approvedQuestions)
+                        {
+                            <option value="@q.Id">@GetQuestionLabel(q)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-uppercase">Answer</label>
+                    <RadzenHtmlEditor class="form-control" @bind-Value="@answerText" UploadUrl="upload/image">
+                        <RadzenHtmlEditorUndo />
+                        <RadzenHtmlEditorRedo />
+                        <RadzenHtmlEditorSeparator />
+                        <RadzenHtmlEditorBold />
+                        <RadzenHtmlEditorItalic />
+                        <RadzenHtmlEditorUnderline />
+                        <RadzenHtmlEditorStrikeThrough />
+                        <RadzenHtmlEditorSeparator />
+                        <RadzenHtmlEditorColor />
+                        <RadzenHtmlEditorBackground />
+                        <RadzenHtmlEditorRemoveFormat />
+                    </RadzenHtmlEditor>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(answerError))
+                {
+                    <div class="alert alert-danger">@answerError</div>
+                }
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-secondary" type="button" @onclick="ClosePage">Cancel</button>
+                    <button class="btn btn-primary" type="button" @onclick="SaveAnswer">Save Answer</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private enum PanelMode
+    {
+        Question,
+        Answer
+    }
+
+    private PanelMode mode = PanelMode.Question;
+    private QuestionVM questionVM = new();
+    private List<CategoryModel> categories = new();
+    private List<StatusModel> statuses = new();
+    private List<QuestionModel> approvedQuestions;
+    private UserModel loggedUser;
+    private string selectedQuestionId = "";
+    private string answerText = "";
+    private string answerError = "";
+    private string statusMessage = "";
+    private int questionEditorKey;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await categoryData.GetAllCategories();
+        statuses = await statusData.GetAllStatuses();
+        loggedUser = await authProvider.GetUserFromAuth(userData);
+        approvedQuestions = await questionData.GetAllApprovedQuestions();
+    }
+
+    private void SetMode(PanelMode nextMode)
+    {
+        mode = nextMode;
+        statusMessage = "";
+        answerError = "";
+    }
+
+    private string ModeClass(PanelMode value)
+    {
+        return mode == value ? "sort-selected" : "";
+    }
+
+    private void ClosePage()
+    {
+        navManager.NavigateTo("/");
+    }
+
+    private async Task SaveQuestion(QuestionVM editedQuestionVM)
+    {
+        if (loggedUser is null)
+        {
+            navManager.NavigateTo(Urls.LoginPath, true);
+            return;
+        }
+
+        var selectedCategories = categories
+            .Where(x => editedQuestionVM.CategoryIds.Any(c => c == x.Id))
+            .ToList();
+
+        if (selectedCategories.Count == 0)
+        {
+            editedQuestionVM.CategoryIds = new HashSet<string>();
+            return;
+        }
+
+        var question = new QuestionModel
+        {
+            Question = editedQuestionVM.Question,
+            Description = editedQuestionVM.Description,
+            Author = new BasicUserModel(loggedUser),
+            Categories = selectedCategories,
+            Status = statuses?.FirstOrDefault(),
+            IsApproved = true,
+            IsRejected = false,
+            IsArchived = false
+        };
+
+        await questionData.CreateQuestion(question);
+
+        questionVM = new QuestionVM();
+        questionEditorKey++;
+        approvedQuestions = await questionData.GetAllApprovedQuestions();
+        statusMessage = "Question created and published.";
+        toasterService.AddToast(Toast.CreateToastAlert("Question created", 3000));
+    }
+
+    private async Task SaveAnswer()
+    {
+        answerError = "";
+
+        if (loggedUser is null)
+        {
+            navManager.NavigateTo(Urls.LoginPath, true);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(selectedQuestionId))
+        {
+            answerError = "Select a question.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(answerText))
+        {
+            answerError = "Answer text is required.";
+            return;
+        }
+
+        var answer = new AnswerModel
+        {
+            Answer = answerText,
+            Author = loggedUser,
+            CreateDate = DateTime.UtcNow,
+            QuestionId = selectedQuestionId,
+            Votes = new HashSet<string>(),
+            IsApproved = true
+        };
+
+        await answerData.CreateAnswer(answer);
+
+        selectedQuestionId = "";
+        answerText = "";
+        statusMessage = "Answer created and approved.";
+        toasterService.AddToast(Toast.CreateToastAlert("Answer created", 3000));
+    }
+
+    private static string GetQuestionLabel(QuestionModel question)
+    {
+        var plain = StripHtml(question.Question);
+        if (plain.Length <= 80)
+        {
+            return plain;
+        }
+
+        return plain.Substring(0, 80) + "...";
+    }
+
+    private static string StripHtml(string html)
+    {
+        if (string.IsNullOrWhiteSpace(html))
+        {
+            return "(no title)";
+        }
+
+        var plain = Regex.Replace(html, "<.*?>", string.Empty);
+        return string.IsNullOrWhiteSpace(plain) ? "(no title)" : plain.Trim();
+    }
+}

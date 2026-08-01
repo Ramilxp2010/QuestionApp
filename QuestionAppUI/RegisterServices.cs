@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using QuestionAppUI.Toaster;
+using Radzen;
 
 namespace QuestionAppUI
 {
@@ -23,6 +25,7 @@ namespace QuestionAppUI
             });
 
             builder.Services.AddAuthorization();
+            builder.Services.AddSingleton<IPasswordHasher<UserModel>, PasswordHasher<UserModel>>();
 
             builder.Services.AddSingleton<IDbConnection, DbConnection>();
             builder.Services.AddSingleton<ICategoryData, MongoCategoryData>();
@@ -32,6 +35,7 @@ namespace QuestionAppUI
             builder.Services.AddSingleton<IAnswerData, MongoAnswerData>();
             builder.Services.AddSingleton<ToasterService>();
 
+            builder.Services.AddRadzenComponents();
         }
     }
 }

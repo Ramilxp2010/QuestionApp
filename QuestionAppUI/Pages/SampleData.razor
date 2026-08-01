@@ -1,119 +1,63 @@
 ﻿@page "/SampleData"
 @using Microsoft.AspNetCore.Authorization
-@using QuestionAppUI.Data;
+@using Microsoft.AspNetCore.Identity
+@using QuestionAppUI.Helpers
 @attribute [Authorize(Roles = "Admin")]
-@inject ICategoryData _categoryData
-@inject IStatusData _statusData
-@inject IQuestionData _questionData
-@inject IUserData _userData
-@inject IAnswerData _answerData
+@inject ICategoryData categoryData
+@inject IStatusData statusData
+@inject IQuestionData questionData
+@inject IUserData userData
+@inject IAnswerData answerData
+@inject IPasswordHasher<UserModel> passwordHasher
 
-<h3>Sample Data</h3>
+<h1 class="page-heading text-uppercase mb-4">Seed Data</h1>
 
-@if (sampleDataCreated)
-{
-    <h4>Sample Data have been created</h4>
-}
-else
-{
-    <button class="btn btn-primary" @onclick="GenerateSampleData">Generate Sample Data</button>
-}
+<div class="form-layout">
+    @if (sampleDataCreated)
+    {
+        <h4>Sample data ensured (empty collections were filled).</h4>
+    }
+    else
+    {
+        <p class="mb-3">Creates demo users, categories, statuses, questions and answers when collections are empty.</p>
+        <button class="btn btn-primary" @onclick="GenerateSampleData" disabled="@isBusy">
+            @(isBusy ? "Seeding..." : "Generate Sample Data")
+        </button>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+</div>
 
 @code {
-    private bool sampleDataCreated = false;
+    private bool sampleDataCreated;
+    private bool isBusy;
+    private string errorMessage = "";
 
     private async Task GenerateSampleData()
     {
-        await CreateCategories();
-        await CreateStatuses();
-        await CreateUsers();
-        await CreateQuestions();
-        await CreateAnswers();
-
-        sampleDataCreated = true;
-    }
-
-    private async Task CreateAnswers()
-    {
-        var questions = await _questionData.GetAllQuestions();
-        foreach (var question in questions)
+        isBusy = true;
+        errorMessage = "";
+        try
         {
-            foreach (var template in QuestionAppUI.Data.SampleData.SampleAnswers)
-            {
-                var author = await _userData.GetUserByIdentifier(template.Author.ObjectIdentifier);
-                var answer = new AnswerModel
-                {
-                    Answer = template.Answer,
-                    Author = author,
-                    CreateDate = DateTime.UtcNow,
-                    QuestionId = question.Id,
-                    Votes = new HashSet<string>(),
-                    IsApproved = true
-                };
-                await _answerData.CreateAnswer(answer);
-            }
+            await DemoDataSeeder.EnsureDemoDataAsync(
+                userData,
+                passwordHasher,
+                categoryData,
+                statusData,
+                questionData,
+                answerData);
+            sampleDataCreated = true;
         }
-    }
-
-    private async Task CreateQuestions()
-    {
-        var questions = await _questionData.GetAllQuestions();
-        if (questions?.Count == 0)
+        catch (Exception ex)
         {
-            var categories = await _categoryData.GetAllCategoies();
-            var statuses = await _statusData.GetAllStatuses();
-            foreach (var question in QuestionAppUI.Data.SampleData.SampleQuestions)
-            {
-                var user = await _userData.GetUserByIdentifier(question.Author.ObjectId);
-                question.Author = new BasicUserModel(user);
-                question.Status = statuses?.FirstOrDefault(x => x.Name == question.Status?.Name);
-                question.Categories = categories?.Where(x => question.Categories.Any(c => c.Name == x.Name)).ToList();
-                await _questionData.CreateQuestion(question);
-            }
+            errorMessage = ex.Message;
         }
-
-        return;
-    }
-
-    private async Task CreateUsers()
-    {
-        var users = await _userData.GetUsersAsync();
-        if (users?.Count == 0)
+        finally
         {
-            foreach (var user in QuestionAppUI.Data.SampleData.SampleUsers)
-            {
-                await _userData.CreateUser(user);
-            }
+            isBusy = false;
         }
-
-        return;
-    }
-
-    private async Task CreateCategories()
-    {
-        var categories = await _categoryData.GetAllCategoies();
-        if (categories?.Count == 0)
-        {
-            foreach (var categoty in QuestionAppUI.Data.SampleData.SampleCategories)
-            {
-                await _categoryData.CreateCategory(categoty);   
-            }
-        }
-
-        return;
-    }
-
-    private async Task CreateStatuses()
-    {
-        var statuses = await _statusData.GetAllStatuses();
-        if (statuses?.Count == 0)
-        {
-            foreach (var status in QuestionAppUI.Data.SampleData.SampleStatuses)
-            {
-                await _statusData.CreateStatus(status);
-            }
-        }
-
-        return;
     }
 }

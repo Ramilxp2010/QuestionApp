@@ -29,7 +29,9 @@ Pipeline:
 | `IAnswerData` | Singleton | `MongoAnswerData` |
 | `ToasterService` | Singleton | `ToasterService` |
 
-Также: `AddRazorPages`, `AddServerSideBlazor`, `AddMemoryCache`, cookie authentication (срок cookie — 20 дней), `AddAuthorization`.
+Также: `AddRazorPages`, `AddServerSideBlazor`, `AddMemoryCache`, cookie authentication (срок cookie — 20 дней), `AddAuthorization`, `IPasswordHasher<UserModel>`.
+
+При старте [`Program.cs`](../QuestionAppUI/Program.cs) вызывает [`DemoUserSeeder`](../QuestionAppUI/Helpers/DemoUserSeeder.cs) — создаёт/дополняет демо-пользователей в Mongo с хешем пароля.
 
 ## Аутентификация и авторизация
 
@@ -37,14 +39,16 @@ Pipeline:
 sequenceDiagram
   participant User
   participant LoginPage
-  participant SampleData
+  participant Mongo
+  participant Hasher
   participant Cookie
   participant Blazor
-  participant Mongo
 
   User->>LoginPage: POST UserName Password
-  LoginPage->>SampleData: поиск в AuthUsers
-  SampleData-->>LoginPage: роль и ObjectIdentifier
+  LoginPage->>Mongo: GetUserByUserName
+  Mongo-->>LoginPage: UserModel
+  LoginPage->>Hasher: VerifyHashedPassword
+  Hasher-->>LoginPage: success
   LoginPage->>Cookie: SignInAsync claims
   Cookie-->>User: redirect /
   Blazor->>Cookie: AuthenticationState
@@ -53,14 +57,14 @@ sequenceDiagram
 ```
 
 - Схема: Cookie Authentication.
-- Логин: [`/identity/account/login`](../QuestionAppUI/Areas/Identity/Pages/Account/Login.cshtml) — сверка с жёстко заданным списком [`SampleData.AuthUsers`](../QuestionAppUI/Data/SampleData.cs) (не Mongo, пароли в открытом виде).
+- Источник пользователей: Mongo `UserModel` (`UserName`, `PasswordHash`, `Role`, `ObjectIdentifier`).
+- Логин: [`Login.cshtml.cs`](../QuestionAppUI/Areas/Identity/Pages/Account/Login.cshtml.cs) — `PasswordHasher<UserModel>`.
 - Claims: `ClaimTypes.Name`, `ClaimTypes.Role`, `ObjectIdentifier`.
-- Связь с профилем в БД: [`AuthenticationStateProviderHelper.GetUserFromAuth`](../QuestionAppUI/Helpers/AuthenticationStateProviderHelper.cs) читает `ObjectIdentifier` и загружает `UserModel` через `IUserData`.
-- Logout: [`/identiy/account/logout`](../QuestionAppUI/Areas/Identity/Pages/Account/Logout.cshtml) (в пути опечатка `identiy`).
-- UI: `CascadingAuthenticationState` + `AuthorizeRouteView` в [`App.razor`](../QuestionAppUI/App.razor); неавторизованным показывается [`NotAutorized.razor`](../QuestionAppUI/Shared/NotAutorized.razor).
-- Роли: `User`, `Admin` (`[Authorize]`, `[Authorize(Roles = "Admin")]`, `AuthorizeView`).
+- Профиль в UI: [`AuthenticationStateProviderHelper`](../QuestionAppUI/Helpers/AuthenticationStateProviderHelper.cs).
+- Logout: [`/identity/account/logout`](../QuestionAppUI/Areas/Identity/Pages/Account/Logout.cshtml).
+- Upload изображений: `POST /upload/image` (только для авторизованных) → `wwwroot/uploads/`.
 
-Демо-пользователи: `Ramil` / `Tom` / `Kate` (User), `Admin` (Admin); пароль у всех `1234`.
+Демо-пользователи: `Ramil` / `Tom` / `Kate` (User), `Admin` (Admin); пароль у всех `1234` (в БД только hash).
 
 ## Слой данных (MongoDB)
 
@@ -106,10 +110,12 @@ sequenceDiagram
 | `/Edit/{Id}` | [`Edit.razor`](../QuestionAppUI/Pages/Edit.razor) | `[Authorize]` | Редактирование (автор или Admin) |
 | `/Details/{Id}` | [`Details.razor`](../QuestionAppUI/Pages/Details.razor) | Публичный | Детали, ответы, смена статуса (Admin) |
 | `/AdminApproval` | [`AdminApproval.razor`](../QuestionAppUI/Pages/AdminApproval.razor) | Admin | Модерация очереди |
-| `/Profile` | [`Profile.razor`](../QuestionAppUI/Pages/Profile.razor) | Без атрибута на странице | Вопросы текущего пользователя по статусам |
-| `/SampleData` | [`SampleData.razor`](../QuestionAppUI/Pages/SampleData.razor) | Открытый | Засев демо-данных |
+| `/AdminPanel` | [`AdminPanel.razor`](../QuestionAppUI/Pages/AdminPanel.razor) | Admin | Создание одобренных вопросов и ответов |
+| `/Profile` | [`Profile.razor`](../QuestionAppUI/Pages/Profile.razor) | `[Authorize]` | Вопросы текущего пользователя по статусам |
+| `/SampleData` | [`SampleData.razor`](../QuestionAppUI/Pages/SampleData.razor) | Admin | Засев демо-данных |
+| `/upload/image` | Minimal API в `Program.cs` | `[Authorize]` | Загрузка изображений для Radzen |
 | `/identity/account/login` | Login Razor Page | Гость | Вход |
-| `/identiy/account/logout` | Logout Razor Page | — | Выход |
+| `/identity/account/logout` | Logout Razor Page | — | Выход |
 | `/_Host` | [`_Host.cshtml`](../QuestionAppUI/Pages/_Host.cshtml) | — | Хост Blazor-приложения |
 
 ## Основной пользовательский поток
@@ -124,8 +130,8 @@ flowchart LR
   Index --> Profile[/Profile]
 ```
 
-1. Авторизованный пользователь создаёт вопрос (`IsAproved = false`).
-2. Admin одобряет или отклоняет на `/AdminApproval`.
+1. Авторизованный пользователь создаёт вопрос (`IsApproved = false`).
+2. Admin одобряет или отклоняет на `/AdminApproval` (или публикует сразу через `/AdminPanel`).
 3. Одобренные вопросы видны на `/`.
 4. На `/Details/{Id}` можно голосовать, отвечать; Admin задаёт статус вопроса.
 5. `/Profile` группирует вопросы автора (approved / archived / rejected / pending).
@@ -138,16 +144,17 @@ flowchart LR
 | `Toaster` / `ToasterService` | [`Components/Toaster/`](../QuestionAppUI/Components/Toaster/) | Уведомления (например, после сохранения ответа) |
 | `LoginDisplay` | [`Shared/LoginDisplay.razor`](../QuestionAppUI/Shared/LoginDisplay.razor) | Ссылки Login / Logout / Profile / Admin |
 | `MainLayout` | [`Shared/MainLayout.razor`](../QuestionAppUI/Shared/MainLayout.razor) | Общий layout |
+| `NotAuthorized` | [`Shared/NotAuthorized.razor`](../QuestionAppUI/Shared/NotAuthorized.razor) | Экран отказа в доступе |
 
 Хелперы:
 
 - [`Urls.cs`](../QuestionAppUI/Helpers/Urls.cs) — пути login/logout
 - [`AuthenticationStateProviderHelper.cs`](../QuestionAppUI/Helpers/AuthenticationStateProviderHelper.cs) — claim → Mongo user
+- [`DemoUserSeeder.cs`](../QuestionAppUI/Helpers/DemoUserSeeder.cs) — seed демо-пользователей с хешем пароля
+- [`SafeHtml.cs`](../QuestionAppUI/Helpers/SafeHtml.cs) — санитизация HTML
 
-## Известные ограничения (демо)
+## Известные ограничения
 
-1. Пароли демо-пользователей по-прежнему хранятся и сравниваются в открытом виде в коде (`SampleData.AuthUsers`) — не для продакшена.
-2. Auth не является полноценным Identity: cookie + hardcoded users + Mongo-профиль по `ObjectIdentifier`.
-3. Опечатки в именах API/полей (`IsAproved`, `UpVoeted`, `AutoredQuestions` и т.п.) сохранены ради совместимости с данными.
-4. Нет автотестов, Docker и CI.
-5. Загрузка изображений в Radzen-редакторе отключена (нет upload endpoint).
+1. Нет полноценного ASP.NET Core Identity (регистрация, reset password, lockout) — cookie + Mongo users + `PasswordHasher`.
+2. BSON-поля старых опечаток сохранены через `[BsonElement]` (`IsAproved`, `AutoredQuestions`) для совместимости с уже записанными документами.
+3. Нет автотестов, Docker и CI.

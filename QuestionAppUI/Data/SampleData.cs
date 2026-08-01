@@ -4,20 +4,12 @@ namespace QuestionAppUI.Data
 {
     public static class SampleData
     {
-        public static List<AuthUserModel> AuthUsers = new List<AuthUserModel>()
-        {
-            new AuthUserModel(){ UserName = "Ramil", Identifier = "ramil_123", Password="1234", Role= "User"},
-            new AuthUserModel(){ UserName = "Tom", Identifier = "tom_123", Password="1234", Role= "User"},
-            new AuthUserModel(){ UserName = "Kate", Identifier = "kate_123", Password="1234", Role= "User"},
-            new AuthUserModel(){ UserName = "Admin", Identifier = "admin_123", Password="1234", Role= "Admin"}
-        };
-        
         public static List<UserModel> SampleUsers = new List<UserModel>()
         {
-            new UserModel(){ Name = "Ramil", ObjectIdentifier = "ramil_123", DisplayName="Ramil" },
-            new UserModel(){ Name = "Tom", ObjectIdentifier = "tom_123", DisplayName="Tom" },
-            new UserModel(){ Name = "Kate", ObjectIdentifier = "kate_123", DisplayName="Kate" },
-            new UserModel(){ Name = "Admin", ObjectIdentifier = "admin_123", DisplayName="Admin" }
+            new UserModel(){ Name = "Ramil", UserName = "Ramil", ObjectIdentifier = "ramil_123", DisplayName="Ramil", Role = "User", Email = "ramil@example.com" },
+            new UserModel(){ Name = "Tom", UserName = "Tom", ObjectIdentifier = "tom_123", DisplayName="Tom", Role = "User", Email = "tom@example.com" },
+            new UserModel(){ Name = "Kate", UserName = "Kate", ObjectIdentifier = "kate_123", DisplayName="Kate", Role = "User", Email = "kate@example.com" },
+            new UserModel(){ Name = "Admin", UserName = "Admin", ObjectIdentifier = "admin_123", DisplayName="Admin", Role = "Admin", Email = "admin@example.com" }
         };
 
         public static List<CategoryModel> SampleCategories = new List<CategoryModel>()
@@ -54,7 +46,7 @@ namespace QuestionAppUI.Data
                 DateCreated = DateTime.Now,
                 Categories = new List<CategoryModel> { SampleCategories.FirstOrDefault(x => x.Name == "C#"), SampleCategories.FirstOrDefault(x => x.Name == ".NET/Core") },
                 Author = new BasicUserModel(SampleUsers[0]),
-                IsAproved = true,
+                IsApproved = true,
             },
             new QuestionModel
             {
@@ -63,7 +55,7 @@ namespace QuestionAppUI.Data
                 DateCreated = DateTime.Now,
                 Categories = new List<CategoryModel> {SampleCategories.FirstOrDefault(x => x.Name == ".NET/Core") },
                 Author = new BasicUserModel(SampleUsers[0]),
-                IsAproved = true,
+                IsApproved = true,
             },
             new QuestionModel
             {
@@ -76,7 +68,7 @@ namespace QuestionAppUI.Data
                     SampleCategories.FirstOrDefault(x => x.Name == "ООП") ,
                     SampleCategories.FirstOrDefault(x => x.Name == "Тестирование") },
                 Author = new BasicUserModel(SampleUsers[0]),
-                IsAproved = true,
+                IsApproved = true,
             },
             new QuestionModel
             {
@@ -85,7 +77,7 @@ namespace QuestionAppUI.Data
                 DateCreated = DateTime.Now,
                 Categories = new List<CategoryModel> {SampleCategories.FirstOrDefault(x => x.Name == "C#") },
                 Author = new BasicUserModel(SampleUsers[0]),
-                IsAproved = true,
+                IsApproved = true,
             },
             new QuestionModel
             {
@@ -94,7 +86,7 @@ namespace QuestionAppUI.Data
                 DateCreated = DateTime.Now,
                 Categories = new List < CategoryModel > { SampleCategories.FirstOrDefault(x => x.Name == "C#") },
                 Author = new BasicUserModel(SampleUsers[0]),
-                IsAproved = true,
+                IsApproved = true,
             },
             new QuestionModel
             {
@@ -103,7 +95,7 @@ namespace QuestionAppUI.Data
                 DateCreated = DateTime.Now,
                 Categories = new List < CategoryModel > { SampleCategories.FirstOrDefault(x => x.Name == "C#") },
                 Author = new BasicUserModel(SampleUsers[0]),
-                IsAproved = true,
+                IsApproved = true,
             },
         };
 

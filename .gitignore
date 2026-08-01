@@ -400,6 +400,10 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# Uploaded images (keep folder)
+QuestionAppUI/wwwroot/uploads/*
+!QuestionAppUI/wwwroot/uploads/.gitkeep
+
 ##
 ## Visual studio for Mac
 ##

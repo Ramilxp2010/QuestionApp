@@ -1,4 +1,4 @@
-﻿@page "/Profile"
+@page "/Profile"
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @inject IQuestionData questionData
@@ -198,9 +198,9 @@
         if (loggedUser != null && results != null)
         {
             allQuestions = results.OrderByDescending(x => x.DateCreated).ToList();
-            approvedQuestions = allQuestions.Where(x => x.IsAproved && !x.IsArchived && !x.IsRejected).ToList();
+            approvedQuestions = allQuestions.Where(x => x.IsApproved && !x.IsArchived && !x.IsRejected).ToList();
             archivedQuestions = allQuestions.Where(x => x.IsArchived! && !x.IsRejected).ToList();
-            pendingQuestions = allQuestions.Where(x => !x.IsAproved && !x.IsArchived && !x.IsRejected).ToList();
+            pendingQuestions = allQuestions.Where(x => !x.IsApproved && !x.IsArchived && !x.IsRejected).ToList();
             rejectedQuestions = allQuestions.Where(x => x.IsRejected).ToList();
         }        
 

@@ -31,9 +31,14 @@ dotnet run --project QuestionAppUI
 
 База данных: `QuestionApp`.
 
-### Начальные данные
+### Пользователи и начальные данные
 
-Откройте `/SampleData` — страница засевает категории, статусы, пользователей, вопросы и ответы.
+При первом запуске с пустой Mongo автоматически создаются:
+
+- демо-пользователи (пароль как hash через `PasswordHasher`)
+- категории, статусы, вопросы и ответы
+
+Повторный ручной seed (только пустые коллекции): Admin → `/SampleData`.
 
 ### Демо-логины
 
@@ -43,6 +48,8 @@ dotnet run --project QuestionAppUI
 | Tom          | 1234   | User  |
 | Kate         | 1234   | User  |
 | Admin        | 1234   | Admin |
+
+Auth: Mongo `UserModel` + cookie. Загрузка картинок из редактора: `POST /upload/image` → `wwwroot/uploads/`.
 
 ## Структура решения
 

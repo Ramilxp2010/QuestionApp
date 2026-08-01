@@ -1,4 +1,4 @@
-﻿@page "/Edit/{Id}"
+@page "/Edit/{Id}"
 @attribute [Authorize]
 
 @using QuestionAppUI.Components
@@ -56,7 +56,7 @@
     protected async override Task OnInitializedAsync()
     {
         question = await questionData.GetQuestion(Id);
-        categories = await categoryData.GetAllCategoies();
+        categories = await categoryData.GetAllCategories();
 
         loggedUser = await authProvider.GetUserFromAuth(userData);
 

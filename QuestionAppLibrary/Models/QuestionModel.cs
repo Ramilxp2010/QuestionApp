@@ -22,7 +22,8 @@
 
         public string Answer { get; set; }
 
-        public bool IsAproved { get; set; }
+        [BsonElement("IsAproved")]
+        public bool IsApproved { get; set; }
 
         public bool IsRejected { get; set; }
 

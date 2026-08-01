@@ -35,7 +35,7 @@ namespace QuestionAppLibrary.DataAccess
         public async Task<List<QuestionModel>> GetAllApprovedQuestions()
         {
             var results = await GetAllQuestions();
-            return results.Where(x => x.IsAproved && !x.IsArchived && !x.IsRejected).ToList();
+            return results.Where(x => x.IsApproved && !x.IsArchived && !x.IsRejected).ToList();
         }
 
         public async Task<List<QuestionModel>> GetAllRejectedQuestions()
@@ -50,10 +50,10 @@ namespace QuestionAppLibrary.DataAccess
             return results.Where(x => x.IsArchived).ToList();
         }
 
-        public async Task<List<QuestionModel>> GetAllQuestionsByCategoty(string categoryId)
+        public async Task<List<QuestionModel>> GetAllQuestionsByCategory(string categoryId)
         {
             var results = await GetAllQuestions();
-            return results.Where(x => x.IsAproved
+            return results.Where(x => x.IsApproved
                 && !x.IsRejected
                 && !x.IsArchived
                 && x.Categories.Any(c => c.Id == categoryId)).ToList();
@@ -62,7 +62,7 @@ namespace QuestionAppLibrary.DataAccess
         public async Task<List<QuestionModel>> GetAllQuestionsByStatus(string statusId)
         {
             var results = await GetAllQuestions();
-            return results.Where(x => x.IsAproved
+            return results.Where(x => x.IsApproved
                 && !x.IsRejected
                 && !x.IsArchived
                 && x.Status.Id == statusId).ToList();
@@ -71,7 +71,7 @@ namespace QuestionAppLibrary.DataAccess
         public async Task<List<QuestionModel>> GetAllQuestionsForApprove()
         {
             var results = await GetAllQuestions();
-            return results.Where(x => !x.IsAproved
+            return results.Where(x => !x.IsApproved
                 && !x.IsRejected
                 && !x.IsArchived).ToList();
         }
@@ -101,7 +101,7 @@ namespace QuestionAppLibrary.DataAccess
             var user = await _userData.GetUser(question.Author.Id);
             if (user != null)
             {
-                user.AutoredQuestions.Add(new BasicQuestionModel(question));
+                user.AuthoredQuestions.Add(new BasicQuestionModel(question));
                 await _userData.UpdateUser(user);
             }
 
@@ -114,7 +114,7 @@ namespace QuestionAppLibrary.DataAccess
             _cache.Remove(CacheName);
         }
 
-        public async Task UpVoeted(string questionId, string userId)
+        public async Task UpVoted(string questionId, string userId)
         {
             var question = await GetQuestion(questionId);
             var user = await _userData.GetUser(userId);
@@ -160,7 +160,7 @@ namespace QuestionAppLibrary.DataAccess
                 Author = source.Author,
                 UserVotes = source.UserVotes != null ? new HashSet<string>(source.UserVotes) : new HashSet<string>(),
                 Answer = source.Answer,
-                IsAproved = source.IsAproved,
+                IsApproved = source.IsApproved,
                 IsRejected = source.IsRejected,
                 IsArchived = source.IsArchived
             };

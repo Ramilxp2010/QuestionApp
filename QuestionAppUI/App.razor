@@ -1,9 +1,9 @@
-﻿<CascadingAuthenticationState>
+<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
-                    <NotAutorized/>
+                    <NotAuthorized/>
                 </NotAuthorized>
             </AuthorizeRouteView>
         </Found>
@@ -14,5 +14,6 @@
             </LayoutView>
         </NotFound>
     </Router>
+    <RadzenComponents />
     <Toaster />
 </CascadingAuthenticationState>

@@ -1,4 +1,4 @@
-﻿@page "/AdminApproval"
+@page "/AdminApproval"
 @attribute [Authorize(Roles = "Admin")]
 @inject IQuestionData questionData
 @inject IUserData userData
@@ -127,12 +127,12 @@
             .GetAuthenticationStateAsync();
         var user = authState.User;
         allQuestions = await questionData.GetAllQuestionsForApprove();
-        allCategories = await categoryData.GetAllCategoies();
+        allCategories = await categoryData.GetAllCategories();
     }
 
     private async Task ApproveQuestion(QuestionModel question)
     {
-        question.IsAproved = true;
+        question.IsApproved = true;
         allQuestions.Remove(question);
         await questionData.UpdateQuestion(question);
     }

@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 
 @inject ICategoryData categoryData
 @inject IStatusData statusData
@@ -54,7 +54,7 @@
                                             </button>
                                         </AuthorizeView>
                                         <AuthorizeView Roles="User">
-                                            @if (!question.IsRejected && !question.IsAproved && !question.IsArchived && question?.Author.Id == loggedUser?.Id)
+                                            @if (!question.IsRejected && !question.IsApproved && !question.IsArchived && question?.Author.Id == loggedUser?.Id)
                                             {
                                                 <button @onclick="(()=> GoToEdit(question.Id))"
                                                         class="btn question-entry-text-category btn-archive dropdown-item">
@@ -174,7 +174,7 @@
 
     protected async override Task OnInitializedAsync()
     {
-        categories = await categoryData.GetAllCategoies();
+        categories = await categoryData.GetAllCategories();
         statuses = await statusData.GetAllStatuses();
 
         loggedUser = await authProvider.GetUserFromAuth(userData);
@@ -231,7 +231,7 @@
         isSortedByNew = boolResults.Success ? boolResults.Value : true;
     }
 
-    private async Task SaveFillterState()
+    private async Task SaveFilterState()
     {
         await sessionStorage.SetAsync(nameof(selectedCategories), selectedCategories);
         await sessionStorage.SetAsync(nameof(selectedStatus), selectedStatus);
@@ -273,7 +273,7 @@
         }
 
         questions = output;
-        await SaveFillterState();
+        await SaveFilterState();
     }
 
     private async Task OrderByNew(bool isNew)
@@ -334,7 +334,7 @@
                 question.UserVotes.Remove(loggedUser.Id);
             }
 
-            await questionData.UpVoeted(question.Id, loggedUser.Id);
+            await questionData.UpVoted(question.Id, loggedUser.Id);
 
             if (!isSortedByNew)
             {

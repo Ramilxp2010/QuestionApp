@@ -13,7 +13,7 @@ namespace QuestionAppLibrary.DataAccess
             _cache = cache;
         }
 
-        public async Task<List<CategoryModel>> GetAllCategoies()
+        public async Task<List<CategoryModel>> GetAllCategories()
         {
             var output = _cache.Get<List<CategoryModel>>(CacheName);
             if (output != null && output.Any())

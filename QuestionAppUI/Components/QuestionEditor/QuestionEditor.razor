@@ -12,7 +12,7 @@
                     <label class="form-label fw-bold text-uppercase" for="question-text">Question</label>
                     <div class="input-description">Text your question</div>
 
-                    <RadzenHtmlEditor class="form-control" @bind-Value=@questionVM.Question>
+                    <RadzenHtmlEditor class="form-control" @bind-Value=@questionVM.Question UploadUrl="upload/image">
                         <RadzenHtmlEditorUndo />
                         <RadzenHtmlEditorRedo />
                         <RadzenHtmlEditorSeparator />
@@ -30,7 +30,7 @@
                 <div class="input-section">
                     <label class="form-label fw-bold text-uppercase" for="description-text">Description</label>
                     <div class="input-description">Text your question description</div>
-                    <RadzenHtmlEditor class="form-control" id="description-text" @bind-Value=@questionVM.Description>
+                    <RadzenHtmlEditor class="form-control" id="description-text" @bind-Value=@questionVM.Description UploadUrl="upload/image">
                         <RadzenHtmlEditorUndo />
                         <RadzenHtmlEditorRedo />
                         <RadzenHtmlEditorSeparator />
