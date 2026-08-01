@@ -2,15 +2,14 @@
 @inject NavigationManager navManager
 
 <AuthorizeView Roles="Admin">
-    <a class="login-link" href="/AdminApproval">
-    </a>
+    <a class="login-link" href="/AdminApproval">Admin Approval</a>
 </AuthorizeView>
 <AuthorizeView>
     <Authorized>
         <a href="/Profile">Hello, @context.User.Identity?.Name!</a>
-        <a style="margin-left:10px;" href="/identiy/account/logout">Log out</a>
+        <a style="margin-left:10px;" href="@Urls.LogoutPath">Log out</a>
     </Authorized>
     <NotAuthorized>
-        <a href="Identity/Account/Login">Login</a>
+        <a href="@Urls.LoginPath">Login</a>
     </NotAuthorized>
 </AuthorizeView>

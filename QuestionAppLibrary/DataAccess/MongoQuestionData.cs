@@ -20,21 +20,22 @@ namespace QuestionAppLibrary.DataAccess
 
         public async Task<List<QuestionModel>> GetAllQuestions()
         {
-            var output = _cache.Get<List<QuestionModel>>(CacheName);
-            if (output != null && output.Any())
-                return output;
+            var cached = _cache.Get<List<QuestionModel>>(CacheName);
+            if (cached == null || !cached.Any())
+            {
+                var results = await _questions.FindAsync(_ => true);
+                cached = results.ToList();
+                _cache.Set(CacheName, cached, TimeSpan.FromMinutes(1));
+            }
 
-            var results = await _questions.FindAsync(_ => true);
-            output = results.ToList();
-            _cache.Set(CacheName, output, TimeSpan.FromMinutes(1));
-
-            return output;
+            // Return copies so UI mutations do not dirty the shared cache.
+            return cached.Select(CloneQuestion).ToList();
         }
 
         public async Task<List<QuestionModel>> GetAllApprovedQuestions()
         {
             var results = await GetAllQuestions();
-            return results.Where(x => x.IsAproved).ToList();
+            return results.Where(x => x.IsAproved && !x.IsArchived && !x.IsRejected).ToList();
         }
 
         public async Task<List<QuestionModel>> GetAllRejectedQuestions()
@@ -55,7 +56,7 @@ namespace QuestionAppLibrary.DataAccess
             return results.Where(x => x.IsAproved
                 && !x.IsRejected
                 && !x.IsArchived
-                && x.Categories.Any(x=>x.Id == categoryId)).ToList();
+                && x.Categories.Any(c => c.Id == categoryId)).ToList();
         }
 
         public async Task<List<QuestionModel>> GetAllQuestionsByStatus(string statusId)
@@ -95,81 +96,74 @@ namespace QuestionAppLibrary.DataAccess
 
         public async Task CreateQuestion(QuestionModel question)
         {
-            var client = _db.Client;
-            using var session = await client.StartSessionAsync();
-            //session.StartTransaction();
+            await _questions.InsertOneAsync(question);
 
-            try
+            var user = await _userData.GetUser(question.Author.Id);
+            if (user != null)
             {
-                var db = client.GetDatabase(_db.DbName);
-                var questionInTransaction = db.GetCollection<QuestionModel>(_db.QuestionCollectionName);
-                await questionInTransaction.InsertOneAsync(question);
-
-                var userInTransaction = db.GetCollection<UserModel>(_db.UserCollectionName);
-                var user = await _userData.GetUser(question.Author.Id);
-                user.VotedQuestions.Add(new BasicQuestionModel(question));
-                await userInTransaction.ReplaceOneAsync(x => x.Id == user.Id, user);
-
-                //await session.CommitTransactionAsync();
+                user.AutoredQuestions.Add(new BasicQuestionModel(question));
+                await _userData.UpdateUser(user);
             }
-            catch (Exception ex)
-            {
-                //await session.AbortTransactionAsync();
-                throw;
-            }
+
+            _cache.Remove(CacheName);
         }
 
         public async Task UpdateQuestion(QuestionModel question)
         {
-            var filter = Builders<QuestionModel>.Filter.Eq("Id", question.Id);
-            await _questions.ReplaceOneAsync(filter, question, new ReplaceOptions { IsUpsert = true });
+            await _questions.ReplaceOneAsync(x => x.Id == question.Id, question);
             _cache.Remove(CacheName);
         }
 
         public async Task UpVoeted(string questionId, string userId)
         {
-            var client = _db.Client;
-            using var session = await client.StartSessionAsync();
-            //session.StartTransaction();
-
-            try
+            var question = await GetQuestion(questionId);
+            var user = await _userData.GetUser(userId);
+            if (question == null || user == null)
             {
-                var db = client.GetDatabase(_db.DbName);
-                var questionInTransaction = db.GetCollection<QuestionModel>(_db.QuestionCollectionName);
-                var question = (await questionInTransaction.FindAsync(s => s.Id == questionId)).First();
+                return;
+            }
 
-                bool isUpvote = question.UserVotes.Add(userId);
-                if (!isUpvote)
-                {
-                    question.UserVotes.Remove(userId);
-                }
+            bool isUpvote = question.UserVotes.Add(userId);
+            if (!isUpvote)
+            {
+                question.UserVotes.Remove(userId);
+            }
 
-                await questionInTransaction.ReplaceOneAsync(session, x => x.Id == questionId, question);
+            await _questions.ReplaceOneAsync(x => x.Id == questionId, question);
 
-                var userInTransaction = db.GetCollection<UserModel>(_db.UserCollectionName);
-                var user = await _userData.GetUser(userId);
-
-                if (isUpvote)
+            if (isUpvote)
+            {
+                if (!user.VotedQuestions.Any(x => x.Id == questionId))
                 {
                     user.VotedQuestions.Add(new BasicQuestionModel(question));
                 }
-                else
-                {
-                    var basicQuestion = user.VotedQuestions.First(x => x.Id == questionId);
-                    user.VotedQuestions.Remove(basicQuestion);
-                }
-                await userInTransaction.ReplaceOneAsync(session, x => x.Id == userId, user);
-
-                //await session.CommitTransactionAsync();
-
-                _cache.Remove(CacheName);
             }
-            catch (Exception ex)
+            else
             {
-                //await session.AbortTransactionAsync();
-                throw;
+                user.VotedQuestions.RemoveAll(x => x.Id == questionId);
             }
+
+            await _userData.UpdateUser(user);
+            _cache.Remove(CacheName);
         }
 
+        private static QuestionModel CloneQuestion(QuestionModel source)
+        {
+            return new QuestionModel
+            {
+                Id = source.Id,
+                Question = source.Question,
+                Description = source.Description,
+                DateCreated = source.DateCreated,
+                Categories = source.Categories?.ToList(),
+                Status = source.Status,
+                Author = source.Author,
+                UserVotes = source.UserVotes != null ? new HashSet<string>(source.UserVotes) : new HashSet<string>(),
+                Answer = source.Answer,
+                IsAproved = source.IsAproved,
+                IsRejected = source.IsRejected,
+                IsArchived = source.IsArchived
+            };
+        }
     }
 }

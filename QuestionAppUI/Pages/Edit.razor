@@ -75,12 +75,16 @@
 
     private async Task CreateQuestion(QuestionVM editedQuestionVM)
     {
-         question.Question = editedQuestionVM.Question;
-         question.Description = editedQuestionVM.Description;
-         question.Author = new BasicUserModel(loggedUser);
-         question.Categories = categories.Where(x => editedQuestionVM.CategoryIds.Any(c => c == x.Id)).ToList();
+        if (question is null || loggedUser is null)
+        {
+            return;
+        }
 
-        if (question.Categories is null)
+        question.Question = editedQuestionVM.Question;
+        question.Description = editedQuestionVM.Description;
+        question.Categories = categories.Where(x => editedQuestionVM.CategoryIds.Any(c => c == x.Id)).ToList();
+
+        if (question.Categories.Count == 0)
         {
             editedQuestionVM.CategoryIds = new HashSet<string>();
             return;

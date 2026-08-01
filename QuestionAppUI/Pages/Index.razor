@@ -65,7 +65,7 @@
                                     </li>
                                     <li>
                                         <AuthorizeView Roles="Admin">
-                                            <button @onclick="(()=> archivingQuestion = question)"
+                                            <button @onclick="(()=> AskArchive(question))"
                                                     class="btn question-entry-text-category btn-archive dropdown-item">
                                                 Archive
                                             </button>
@@ -77,10 +77,10 @@
                     </div>
                     <div class="card-body">
                         <p class="question-card-title" @onclick="(()=>OpenDetails(question))">
-                            @((MarkupString)question.Question)
+                            @SafeHtml.ToMarkup(question.Question)
                         </p>
                         <p class="card-text question-card-text" >
-                            @((MarkupString)question.Description)
+                            @SafeHtml.ToMarkup(question.Description)
                         </p>
                         <div class="question-card-footer">
                             @foreach (var category in question.Categories)
@@ -137,6 +137,27 @@
     </div>
 </div>
 
+@if (archivingQuestion is not null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Archive question</h5>
+                    <button type="button" class="btn-close" @onclick="CancelArchive"></button>
+                </div>
+                <div class="modal-body">
+                    Archive this question? It will be hidden from the main list.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelArchive">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="ArchiveQuestion">Archive</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code{
     private UserModel loggedUser;
 
@@ -157,7 +178,9 @@
         statuses = await statusData.GetAllStatuses();
 
         loggedUser = await authProvider.GetUserFromAuth(userData);
-        userAnswers = await answerData.GetUserAnswers(loggedUser?.Id);
+        userAnswers = loggedUser != null
+            ? await answerData.GetUserAnswers(loggedUser.Id)
+            : new List<AnswerModel>();
     }
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
@@ -170,8 +193,23 @@
         }
     }
 
+    private void AskArchive(QuestionModel question)
+    {
+        archivingQuestion = question;
+    }
+
+    private void CancelArchive()
+    {
+        archivingQuestion = null;
+    }
+
     private async Task ArchiveQuestion()
     {
+        if (archivingQuestion is null)
+        {
+            return;
+        }
+
         archivingQuestion.IsArchived = true;
         await questionData.UpdateQuestion(archivingQuestion);
         questions.Remove(archivingQuestion);
@@ -340,12 +378,12 @@
             return "question-entry-status-none";
         }
 
-        string output = question.Status.Name switch
+        string output = question.Status.Name?.ToLowerInvariant() switch
         {
-            "Completed" => "question-entry-status-complated",
-            "Wathing" => "question-entry-status-wathing",
-            "Upcoming" => "question-entry-status-upcoming",
-            "Dismissed" => "question-entry-status-dismissed",
+            "completed" => "question-entry-status-complated",
+            "watching" => "question-entry-status-wathing",
+            "upcoming" => "question-entry-status-upcoming",
+            "dismissed" => "question-entry-status-dismissed",
             _ => "question-entry-status-none"
         };
 
@@ -369,6 +407,6 @@
 
     private string GetAnswerMarkClass(QuestionModel questionModel)
     {
-        return userAnswers.Any(x => x.QuestionId == questionModel.Id) ? "answered-icon" : "";
+        return userAnswers?.Any(x => x.QuestionId == questionModel.Id) == true ? "answered-icon" : "";
     }
 }

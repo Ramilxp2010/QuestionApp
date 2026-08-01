@@ -1,5 +1,7 @@
 ﻿@page "/SampleData"
+@using Microsoft.AspNetCore.Authorization
 @using QuestionAppUI.Data;
+@attribute [Authorize(Roles = "Admin")]
 @inject ICategoryData _categoryData
 @inject IStatusData _statusData
 @inject IQuestionData _questionData
@@ -36,14 +38,21 @@ else
         var questions = await _questionData.GetAllQuestions();
         foreach (var question in questions)
         {
-            foreach (var answer in QuestionAppUI.Data.SampleData.SampleAnswers)
+            foreach (var template in QuestionAppUI.Data.SampleData.SampleAnswers)
             {
-                answer.QuestionId = question.Id;
-                answer.Author = await _userData.GetUserByIdentifier(answer.Author.ObjectIdentifier);
+                var author = await _userData.GetUserByIdentifier(template.Author.ObjectIdentifier);
+                var answer = new AnswerModel
+                {
+                    Answer = template.Answer,
+                    Author = author,
+                    CreateDate = DateTime.UtcNow,
+                    QuestionId = question.Id,
+                    Votes = new HashSet<string>(),
+                    IsApproved = true
+                };
                 await _answerData.CreateAnswer(answer);
             }
         }
-        return;
     }
 
     private async Task CreateQuestions()

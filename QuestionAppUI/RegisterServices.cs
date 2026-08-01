@@ -18,6 +18,8 @@ namespace QuestionAppUI
             .AddCookie(options =>
             {
                 options.ExpireTimeSpan = TimeSpan.FromDays(20);
+                options.LoginPath = Urls.LoginPath;
+                options.LogoutPath = Urls.LogoutPath;
             });
 
             builder.Services.AddAuthorization();

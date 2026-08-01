@@ -27,9 +27,9 @@
                         </div>
                     </div>
                     <div class="question-detail-text">
-                        <div class="fw-bold mb-2 question-detail-question">@question.Question</div>
+                        <div class="fw-bold mb-2 question-detail-question">@SafeHtml.ToMarkup(question.Question)</div>
                         <div class="mb-2 question-detail-autor">@question.Author.DisplayName</div>
-                        <div class="mb-2">@question.Description</div>
+                        <div class="mb-2">@SafeHtml.ToMarkup(question.Description)</div>
 
                         <div class="question-entry-bottom">
                             @foreach(var category in question.Categories)
@@ -53,7 +53,7 @@
 <div class="row justify-content-center detail-form">
     <div class="col-xl-8 form-layout form-layout-editor">
         <div class="answer-placeholder">Add your answer</div>
-        <RadzenHtmlEditor class="@GetEditorClass()" @bind-Value=@inputAnswer UploadUrl="upload/image" @onclick="ChangeEditorSize">
+        <RadzenHtmlEditor class="@GetEditorClass()" @bind-Value=@inputAnswer @onclick="ChangeEditorSize">
             <RadzenHtmlEditorUndo />
             <RadzenHtmlEditorRedo />
             <RadzenHtmlEditorSeparator />
@@ -116,12 +116,20 @@
                         @answer.CreateDate.ToString("dd.MM.yyyy")
                     </div>
                 </div>
-                <input type="checkbox" class="read-more-checker" id="read-more-checker" />
+                <input type="checkbox" class="read-more-checker" id="@($"read-more-checker-{answer.Id}")" />
                 <div class="limiter">
-                    <div class="fw-bold mb-2">@((MarkupString)answer.Answer)</div>
+                    <div class="fw-bold mb-2">@SafeHtml.ToMarkup(answer.Answer)</div>
                     <div class="bottom"></div>
                 </div>
-                <label for="read-more-checker" class="read-more-button"></label>
+                <label for="@($"read-more-checker-{answer.Id}")" class="read-more-button"></label>
+                <AuthorizeView Roles="Admin">
+                    @if (!answer.IsApproved)
+                    {
+                        <button class="btn btn-sm btn-success mt-2" @onclick="(() => ApproveAnswer(answer))">
+                            Approve answer
+                        </button>
+                    }
+                </AuthorizeView>
             </div>
         </div>
     }
@@ -137,7 +145,7 @@
                     @question.Status.Name
                 </div>
                 <div class="question-detail-answer">
-                    @((MarkupString)question.Answer)
+                    @SafeHtml.ToMarkup(question.Answer)
                 </div>
             </div>
         </div>
@@ -227,11 +235,26 @@
     protected async override Task OnInitializedAsync()
     {
         question = await questionData.GetQuestion(Id);
+        if (question is null)
+        {
+            return;
+        }
+
         loggedUser = await authProvider.GetUserFromAuth(userData);
         statuses = await statusData.GetAllStatuses();
-        answers = await answerData.GetQuestionAnswers(question.Id);
-        answers = answers.Where(x => x.IsApproved || x.Author.Id == loggedUser?.Id).ToList();
+        var authState = await authProvider.GetAuthenticationStateAsync();
+        bool isAdmin = authState.User.IsInRole("Admin");
 
+        answers = await answerData.GetQuestionAnswers(question.Id);
+        answers = answers
+            .Where(x => isAdmin || x.IsApproved || x.Author.Id == loggedUser?.Id)
+            .ToList();
+    }
+
+    private async Task ApproveAnswer(AnswerModel answer)
+    {
+        answer.IsApproved = true;
+        await answerData.UpdateAnswer(answer);
     }
 
     private string GetAnswerCountStr()
@@ -270,23 +293,23 @@
                 {
                     return;
                 }
-                question.Status = statuses.Where(s => s.Name.ToLower() == settingStatus.ToLower()).First();
-                question.Answer = @"Added <a href='{urlText}' target='_blank'>{urlText}</a>";
+                question.Status = statuses.First(s => s.Name.Equals(settingStatus, StringComparison.OrdinalIgnoreCase));
+                question.Answer = $"Added <a href='{urlText}' target='_blank'>{urlText}</a>";
                 break;
 
             case "watching":
-                question.Status = statuses.Where(s => s.Name.ToLower() == settingStatus.ToLower()).First();
-                question.Answer = @"We see it";
+                question.Status = statuses.First(s => s.Name.Equals(settingStatus, StringComparison.OrdinalIgnoreCase));
+                question.Answer = "We see it";
                 break;
 
             case "upcoming":
-                question.Status = statuses.Where(s => s.Name.ToLower() == settingStatus.ToLower()).First();
-                question.Answer = @"upcoming";
+                question.Status = statuses.First(s => s.Name.Equals(settingStatus, StringComparison.OrdinalIgnoreCase));
+                question.Answer = "upcoming";
                 break;
 
             case "dismissed":
-                question.Status = statuses.Where(s => s.Name.ToLower() == settingStatus.ToLower()).First();
-                question.Answer = @"dismissed";
+                question.Status = statuses.First(s => s.Name.Equals(settingStatus, StringComparison.OrdinalIgnoreCase));
+                question.Answer = "dismissed";
                 break;
             default:
                 return;
@@ -359,12 +382,12 @@
             return "question-detail-status-none";
         }
 
-        string output = question.Status.Name switch
+        string output = question.Status.Name?.ToLowerInvariant() switch
         {
-            "Completed" => "question-detail-status-complated",
-            "Wathing" => "question-detail-status-wathing",
-            "Upcoming" => "question-detail-status-upcoming",
-            "Dismissed" => "question-detail-status-dismissed",
+            "completed" => "question-detail-status-complated",
+            "watching" => "question-detail-status-wathing",
+            "upcoming" => "question-detail-status-upcoming",
+            "dismissed" => "question-detail-status-dismissed",
             _ => "question-detail-status-none"
         };
 

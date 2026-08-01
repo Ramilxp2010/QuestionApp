@@ -1,4 +1,6 @@
 ﻿@page "/Profile"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @inject IQuestionData questionData
 @inject IUserData userData
 @inject NavigationManager navManager
@@ -15,9 +17,7 @@
 <div class="form-layout mb-3">
     <h2 class="my-submission-heading">My Account</h2>
     <p class="my-submissin-text">
-        <a href="#">
-            Edit My Profile
-        </a>
+        @loggedUser?.DisplayName (@loggedUser?.Email)
     </p>
 </div>
 
@@ -54,7 +54,7 @@
                     @s.Status.Name
                 </div>
                 <p class="my-submission-text">
-                    @((MarkupString)s.Answer)
+                    @SafeHtml.ToMarkup(s.Answer)
                 </p>
             }
         }
@@ -94,7 +94,7 @@
                     @s.Status.Name
                 </div>
                 <p class="my-submission-text">
-                    @((MarkupString)s.Answer)
+                    @SafeHtml.ToMarkup(s.Answer)
                 </p>
             }
         }
@@ -134,7 +134,7 @@
                     @s.Status.Name
                 </div>
                 <p class="my-submission-text">
-                    @((MarkupString)s.Answer)
+                    @SafeHtml.ToMarkup(s.Answer)
                 </p>
             }
         }
@@ -174,7 +174,7 @@
                     @s.Status.Name
                 </div>
                 <p class="my-submission-text">
-                    @((MarkupString)s.Answer)
+                    @SafeHtml.ToMarkup(s.Answer)
                 </p>
             }
         }

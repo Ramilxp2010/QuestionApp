@@ -34,8 +34,7 @@
 
         public Task UpdateUser(UserModel userModel)
         {
-            var filter = Builders<UserModel>.Filter.Eq("Id", userModel.Id);
-            return _users.ReplaceOneAsync(filter, userModel, new ReplaceOptions { IsUpsert = true });
+            return _users.ReplaceOneAsync(x => x.Id == userModel.Id, userModel);
         }
     }
 }

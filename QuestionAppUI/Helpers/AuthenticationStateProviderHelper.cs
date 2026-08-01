@@ -8,6 +8,11 @@ namespace QuestionAppUI.Helpers
         {
             var authState = await provider.GetAuthenticationStateAsync();
             string objectId = authState.User.Claims.FirstOrDefault(x => x.Type.Contains("ObjectIdentifier"))?.Value;
+            if (string.IsNullOrWhiteSpace(objectId))
+            {
+                return null;
+            }
+
             return await userData.GetUserByIdentifier(objectId);
         }
     }
