@@ -8,8 +8,6 @@ builder.ConfigureServices();
 
 var app = builder.Build();
 
-var dbConnection = app.Services.GetService<DbConnection>();
-
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {

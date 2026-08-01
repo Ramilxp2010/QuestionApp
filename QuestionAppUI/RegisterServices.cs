@@ -1,12 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Microsoft.IdentityModel.Tokens;
-using QuestionAppUI.Authentication;
 using QuestionAppUI.Toaster;
-using Radzen;
-using System.Text;
 
 namespace QuestionAppUI
 {
