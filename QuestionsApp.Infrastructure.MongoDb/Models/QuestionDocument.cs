@@ -20,6 +20,8 @@
 
         public HashSet<string> UserVotes { get; set; } = new();
 
+        public int VotesCount { get; set; }
+
         public string Answer { get; set; }
 
         [BsonElement("IsAproved")]

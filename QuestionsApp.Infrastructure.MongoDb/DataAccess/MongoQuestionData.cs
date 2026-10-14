@@ -1,5 +1,6 @@
 ﻿using MapsterMapper;
 using Microsoft.Extensions.Caching.Memory;
+using QuestionApp.Application.Question.Filters;
 using QuestionAppLibrary.DataAccess;
 
 namespace QuestionsApp.Infrastructure.MongoDb.DataAccess
@@ -38,6 +39,46 @@ namespace QuestionsApp.Infrastructure.MongoDb.DataAccess
             var result = cached.Select(CloneQuestion).ToList();
 
             return _mapper.Map<List<Question>>(result);
+        }
+
+        public async Task<ICollection<Question>> GetApprovedQuestions(QuestionFilter filter)
+        {
+            var page = filter.Page > 0 ? filter.Page : 1;
+            var pageSize = filter.PageSize >= 10 && filter.PageSize <= 100 ? filter.PageSize : 10;
+            var offset = (page - 1) * pageSize;
+
+            var builder = Builders<QuestionDocument>.Filter;
+            
+            var queryFilter = builder.Eq(x => x.IsApproved, true);
+            
+            if (!string.IsNullOrWhiteSpace(filter.Search))
+            {
+                queryFilter &= builder.Text(filter.Search);
+            }
+
+            if (filter.CategoriesId != null && filter.CategoriesId.Any())
+            {
+                queryFilter &= builder.AnyIn(x => x.Categories.Select(x => x.Id), filter.CategoriesId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.StatusId))
+            {
+                queryFilter &= builder.Eq(x => x.Status.Id, filter.StatusId);
+            }
+
+            var sort = Builders<QuestionDocument>.Sort
+                .Descending(x => x.VotesCount)
+                .Descending(x => x.DateCreated);
+
+            var results = await _questions
+                .Find(queryFilter)
+                .Sort(sort)
+                .Skip(offset)
+                .Limit(pageSize)
+                .ToListAsync()
+                ;
+
+            return _mapper.Map<ICollection<Question>>(results);
         }
 
         public async Task<List<Question>> GetAllApprovedQuestions()
