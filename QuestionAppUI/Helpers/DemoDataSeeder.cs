@@ -7,7 +7,7 @@ namespace QuestionAppUI.Helpers
     {
         public static async Task EnsureDemoDataAsync(
             IUserData userData,
-            IPasswordHasher<UserModel> passwordHasher,
+            IPasswordHasher<User> passwordHasher,
             ICategoryData categoryData,
             IStatusData statusData,
             IQuestionData questionData,
@@ -74,16 +74,16 @@ namespace QuestionAppUI.Helpers
                     continue;
                 }
 
-                var question = new QuestionModel
+                var question = new Question
                 {
-                    Question = template.Question,
+                    QuestionText = template.QuestionText,
                     Description = template.Description,
                     Answer = template.Answer,
                     DateCreated = template.DateCreated == default ? DateTime.UtcNow : template.DateCreated,
-                    Author = new BasicUserModel(author),
+                    Author = new BasicUser(author),
                     Categories = categories?
                         .Where(c => template.Categories != null && template.Categories.Any(tc => tc.Name == c.Name))
-                        .ToList() ?? new List<CategoryModel>(),
+                        .ToList() ?? new List<Category>(),
                     Status = defaultStatus,
                     IsApproved = true,
                     IsRejected = false,
@@ -122,9 +122,9 @@ namespace QuestionAppUI.Helpers
                         continue;
                     }
 
-                    var answer = new AnswerModel
+                    var answer = new Answer
                     {
-                        Answer = template.Answer,
+                        AnswerText = template.AnswerText,
                         Author = author,
                         CreateDate = DateTime.UtcNow,
                         QuestionId = question.Id,

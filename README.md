@@ -62,3 +62,5 @@ Auth: Mongo `UserModel` + cookie. Загрузка картинок из ред�
 
 - [Технологическая карта](docs/TECHNOLOGY_MAP.md) — стек, версии, зависимости
 - [Архитектура](docs/ARCHITECTURE.md) — слои, auth, маршруты, данные, ограничения
+- [План перехода на стек вакансий](docs/STACK_TRANSITION_PLAN.md) — пошаговый rewrite на Web API + EF + PostgreSQL + Angular
+- [План обучения Angular](docs/ANGULAR_LEARNING_PLAN.md) — дневной маршрут JS/TS/Angular для .NET-разработчика (UI этапы 6–8)

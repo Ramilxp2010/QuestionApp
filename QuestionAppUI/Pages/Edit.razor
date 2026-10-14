@@ -49,9 +49,9 @@
     public string Id { get; set; }
 
     private QuestionVM questionVM = new ();
-    private QuestionModel question;
-    private List<CategoryModel> categories;
-    private UserModel loggedUser;
+    private Question question;
+    private List<Category> categories;
+    private User loggedUser;
 
     protected async override Task OnInitializedAsync()
     {
@@ -62,7 +62,7 @@
 
         if (question != null)
         {
-            questionVM.Question = question.Question;
+            questionVM.Question = question.QuestionText;
             questionVM.Description = question.Description;
             questionVM.CategoryIds = question.Categories.Select(x => x.Id).ToHashSet<string>();
         }
@@ -80,7 +80,7 @@
             return;
         }
 
-        question.Question = editedQuestionVM.Question;
+        question.QuestionText = editedQuestionVM.Question;
         question.Description = editedQuestionVM.Description;
         question.Categories = categories.Where(x => editedQuestionVM.CategoryIds.Any(c => c == x.Id)).ToList();
 

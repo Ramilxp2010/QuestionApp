@@ -31,7 +31,7 @@
         {
             <hr class="my-submission-separator" />
             <div class="fw-bold question-detail-question">
-                @s.Question
+                @s.QuestionText
             </div>
             <p class="my-submission-text">
                 @s.DateCreated.ToShortDateString()
@@ -71,7 +71,7 @@
         {
             <hr class="my-submission-separator" />
             <div class="fw-bold question-detail-question">
-                @s.Question
+                @s.QuestionText
             </div>
             <p class="my-submission-text">
                 @s.DateCreated.ToShortDateString()
@@ -111,7 +111,7 @@
         {
             <hr class="my-submission-separator" />
             <div class="fw-bold question-detail-question">
-                @s.Question
+                @s.QuestionText
             </div>
             <p class="my-submission-text">
                 @s.DateCreated.ToShortDateString()
@@ -151,7 +151,7 @@
         {
             <hr class="my-submission-separator" />
             <div class="fw-bold question-detail-question">
-                @s.Question
+                @s.QuestionText
             </div>
             <p class="my-submission-text">
                 @s.DateCreated.ToShortDateString()
@@ -183,12 +183,12 @@
 
 @code {
 
-    private UserModel loggedUser;
-    private List<QuestionModel> allQuestions;
-    private List<QuestionModel> approvedQuestions;
-    private List<QuestionModel> archivedQuestions;
-    private List<QuestionModel> pendingQuestions;
-    private List<QuestionModel> rejectedQuestions;
+    private User loggedUser;
+    private List<Question> allQuestions;
+    private List<Question> approvedQuestions;
+    private List<Question> archivedQuestions;
+    private List<Question> pendingQuestions;
+    private List<Question> rejectedQuestions;
 
     protected async override Task OnInitializedAsync()
     {

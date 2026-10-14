@@ -1,7 +1,7 @@
 ﻿
 namespace QuestionAppLibrary.Models
 {
-    public class UserModel
+    public class UserDocument
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -24,12 +24,12 @@ namespace QuestionAppLibrary.Models
         public string Email { get; set; }
 
         [BsonElement("AutoredQuestions")]
-        public List<BasicQuestionModel> AuthoredQuestions { get; set; } = new();
+        public List<BasicQuestionDocument> AuthoredQuestions { get; set; } = new();
 
-        public List<BasicAnswerModel> AuthoredAnswers { get; set; } = new();
+        public List<BasicAnswerDocument> AuthoredAnswers { get; set; } = new();
 
-        public List<BasicAnswerModel> VotedAnswers { get; set; } = new();
+        public List<BasicAnswerDocument> VotedAnswers { get; set; } = new();
 
-        public List<BasicQuestionModel> VotedQuestions { get; set; } = new();
+        public List<BasicQuestionDocument> VotedQuestions { get; set; } = new();
     }
 }

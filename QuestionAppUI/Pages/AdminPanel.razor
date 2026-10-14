@@ -111,10 +111,10 @@ else
 
     private PanelMode mode = PanelMode.Question;
     private QuestionVM questionVM = new();
-    private List<CategoryModel> categories = new();
-    private List<StatusModel> statuses = new();
-    private List<QuestionModel> approvedQuestions;
-    private UserModel loggedUser;
+    private List<Category> categories = new();
+    private List<Status> statuses = new();
+    private List<Question> approvedQuestions;
+    private User loggedUser;
     private string selectedQuestionId = "";
     private string answerText = "";
     private string answerError = "";
@@ -164,11 +164,11 @@ else
             return;
         }
 
-        var question = new QuestionModel
+        var question = new Question
         {
-            Question = editedQuestionVM.Question,
+            QuestionText = editedQuestionVM.Question,
             Description = editedQuestionVM.Description,
-            Author = new BasicUserModel(loggedUser),
+            Author = new BasicUser(loggedUser),
             Categories = selectedCategories,
             Status = statuses?.FirstOrDefault(),
             IsApproved = true,
@@ -207,9 +207,9 @@ else
             return;
         }
 
-        var answer = new AnswerModel
+        var answer = new Answer
         {
-            Answer = answerText,
+            AnswerText = answerText,
             Author = loggedUser,
             CreateDate = DateTime.UtcNow,
             QuestionId = selectedQuestionId,
@@ -225,9 +225,9 @@ else
         toasterService.AddToast(Toast.CreateToastAlert("Answer created", 3000));
     }
 
-    private static string GetQuestionLabel(QuestionModel question)
+    private static string GetQuestionLabel(Question question)
     {
-        var plain = StripHtml(question.Question);
+        var plain = StripHtml(question.QuestionText);
         if (plain.Length <= 80)
         {
             return plain;

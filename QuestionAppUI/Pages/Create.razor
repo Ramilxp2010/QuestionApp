@@ -15,8 +15,8 @@
 
 @code {
     private QuestionVM questionVM = new();
-    private List<CategoryModel> categories;
-    private UserModel loggedUser;
+    private List<Category> categories;
+    private User loggedUser;
 
     protected async override Task OnInitializedAsync()
     {
@@ -32,11 +32,11 @@
 
     private async Task CreateQuestion(QuestionVM editedQuestionVM)
     {
-        QuestionModel question = new QuestionModel()
+        Question question = new Question()
         {
-            Question = editedQuestionVM.Question,
+            QuestionText = editedQuestionVM.Question,
             Description = editedQuestionVM.Description,
-            Author = new BasicUserModel(loggedUser),
+            Author = new BasicUser(loggedUser),
             Categories = categories.Where(x => editedQuestionVM.CategoryIds.Any(c=>c == x.Id)).ToList()
         };
 

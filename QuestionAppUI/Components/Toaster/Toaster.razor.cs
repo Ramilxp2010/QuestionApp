@@ -5,7 +5,7 @@ namespace QuestionAppUI.Toaster
 {
     public partial class Toaster : ComponentBase, IDisposable
     {
-        [Inject] private ToasterService? _toasterService { get; set; }
+        [Inject] private ToasterService _toasterService { get; set; }
 
         private ToasterService toasterService => _toasterService!;
 
@@ -18,7 +18,7 @@ namespace QuestionAppUI.Toaster
         private void ClearToast(Toast toast)
             => toasterService.RemoveToast(toast);
 
-        private void ToastChanged(object? sender, EventArgs e)
+        private void ToastChanged(object sender, EventArgs e)
             => this.InvokeAsync(this.StateHasChanged);
 
         public void Dispose()

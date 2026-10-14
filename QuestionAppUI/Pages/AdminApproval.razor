@@ -41,7 +41,7 @@
                     }
                     else
                     {
-                        @s.Question
+                        @s.QuestionText
                         <span class="oi oi-pencil submission-edit-icon" @onclick="(()=>EditTitle(s))"></span>
                     }
                 </div>
@@ -110,10 +110,10 @@
 }
 
 @code {
-    private List<QuestionModel> allQuestions;
-    private List<CategoryModel> allCategories;
+    private List<Question> allQuestions;
+    private List<Category> allCategories;
 
-    private QuestionModel editingModel;
+    private Question editingModel;
     private string currentEditingTitle = "";
     private string editedTitle = "";
     private string currentEditingDescription = "";
@@ -130,14 +130,14 @@
         allCategories = await categoryData.GetAllCategories();
     }
 
-    private async Task ApproveQuestion(QuestionModel question)
+    private async Task ApproveQuestion(Question question)
     {
         question.IsApproved = true;
         allQuestions.Remove(question);
         await questionData.UpdateQuestion(question);
     }
 
-    private async Task RejectQuestion(QuestionModel question)
+    private async Task RejectQuestion(Question question)
     {
         question.IsRejected = true;
         allQuestions.Remove(question);
@@ -149,22 +149,22 @@
         navManager.NavigateTo("/");   
     }
 
-    private void EditTitle(QuestionModel question)
+    private void EditTitle(Question question)
     {
         editingModel = question;
-        editedTitle = question.Question;
+        editedTitle = question.QuestionText;
         currentEditingTitle = question.Id;
         currentEditingDescription = "";
     }
 
-    private async Task SaveTitle(QuestionModel question)
+    private async Task SaveTitle(Question question)
     {
         currentEditingTitle = string.Empty;
-        question.Question = editedTitle;
+        question.QuestionText = editedTitle;
         await questionData.UpdateQuestion(question);
     }
 
-    private void EditDescription(QuestionModel question)
+    private void EditDescription(Question question)
     {
         editingModel = question;
         editedDescription = question.Description;
@@ -172,14 +172,14 @@
         currentEditingDescription = question.Id;
     }
 
-    private async Task SaveDescription(QuestionModel question)
+    private async Task SaveDescription(Question question)
     {
         currentEditingDescription = string.Empty;
         question.Description = editedDescription;
         await questionData.UpdateQuestion(question);
     }
 
-    private void EditCategories(QuestionModel question)
+    private void EditCategories(Question question)
     {
         editingModel = question;
         editedCategories = question.Categories.Select(x=>x.Id).ToHashSet<string>();
@@ -188,27 +188,27 @@
         currentEditingCategories = question.Id;
     }
 
-    private string GetTagClass(CategoryModel category)
+    private string GetTagClass(Category category)
     {
         return editedCategories.Contains(category.Id)
         ? "success-color"
         : "";
     }
 
-    private string GetTagClass(QuestionModel question, CategoryModel category)
+    private string GetTagClass(Question question, Category category)
     {
         return question.Categories.Any(x => x.Id == category.Id)
         ? "success-color"
         : "";
     }
 
-    private void ClickTag(CategoryModel category)
+    private void ClickTag(Category category)
     {
         if (!editedCategories.Add(category.Id))
             editedCategories.Remove(category.Id);
     }
 
-    private async Task SaveCategories(QuestionModel question)
+    private async Task SaveCategories(Question question)
     {
         currentEditingCategories = null;
         question.Categories = allCategories.Where(x => editedCategories.Contains(x.Id)).ToList();

@@ -5,7 +5,7 @@ namespace QuestionAppUI.Components.QuestionEditor
 {
     public partial class QuestionEditor : ComponentBase
     {
-        private List<CategoryModel> categories = new List<CategoryModel>();
+        private List<Category> categories = new List<Category>();
 
         [Inject] private ICategoryData? categoryData { get; set; }
 
@@ -35,14 +35,14 @@ namespace QuestionAppUI.Components.QuestionEditor
             await OnCloseCallback.InvokeAsync();
         }
 
-        private string GetTagClass(CategoryModel category)
+        private string GetTagClass(Category category)
         {
             return questionVM.CategoryIds.Contains(category.Id)
             ? "success-color"
             : "";
         }
 
-        private void ClickTag(CategoryModel category)
+        private void ClickTag(Category category)
         {
             if (!questionVM.CategoryIds.Add(category.Id))
                 questionVM.CategoryIds.Remove(category.Id);

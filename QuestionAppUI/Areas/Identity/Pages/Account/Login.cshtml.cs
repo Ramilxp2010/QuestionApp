@@ -15,12 +15,12 @@ namespace QuestionAppUI.Areas.Identity.Account.Pages
 
         private readonly IHttpContextAccessor _accessor;
         private readonly IUserData _userData;
-        private readonly IPasswordHasher<UserModel> _passwordHasher;
+        private readonly IPasswordHasher<User> _passwordHasher;
 
         public LoginModel(
             IHttpContextAccessor accessor,
             IUserData userData,
-            IPasswordHasher<UserModel> passwordHasher)
+            IPasswordHasher<User> passwordHasher)
         {
             _accessor = accessor;
             _userData = userData;

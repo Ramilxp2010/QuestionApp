@@ -1,22 +1,22 @@
 ﻿namespace QuestionAppLibrary.Models
 {
-    public class QuestionModel
+    public class QuestionDocument
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        public string Question { get; set; }
+        public string QuestionText { get; set; }
 
         public string Description { get; set; }
 
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
-        public List<CategoryModel> Categories { get; set; }
+        public List<CategoryDocument> Categories { get; set; }
 
-        public StatusModel Status { get; set; }
+        public StatusDocument Status { get; set; }
 
-        public BasicUserModel Author { get; set; }
+        public BasicUserDocument Author { get; set; }
 
         public HashSet<string> UserVotes { get; set; } = new();
 

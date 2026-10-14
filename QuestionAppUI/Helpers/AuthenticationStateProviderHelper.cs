@@ -4,7 +4,7 @@ namespace QuestionAppUI.Helpers
 {
     public static class AuthenticationStateProviderHelper
     {
-        public static async Task<UserModel> GetUserFromAuth(this AuthenticationStateProvider provider, IUserData userData) 
+        public static async Task<User> GetUserFromAuth(this AuthenticationStateProvider provider, IUserData userData) 
         {
             var authState = await provider.GetAuthenticationStateAsync();
             string objectId = authState.User.Claims.FirstOrDefault(x => x.Type.Contains("ObjectIdentifier"))?.Value;

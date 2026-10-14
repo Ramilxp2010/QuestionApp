@@ -1,14 +1,14 @@
 ﻿namespace QuestionAppLibrary.Models
 {
-    public class AnswerModel
+    public class AnswerDocument
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        public string Answer { get; set; }
+        public string AnswerText { get; set; }
 
-        public UserModel Author { get; set; }
+        public UserDocument Author { get; set; }
 
         public DateTime CreateDate { get; set; }
 

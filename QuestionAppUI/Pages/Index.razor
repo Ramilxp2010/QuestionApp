@@ -77,7 +77,7 @@
                     </div>
                     <div class="card-body">
                         <p class="question-card-title" @onclick="(()=>OpenDetails(question))">
-                            @SafeHtml.ToMarkup(question.Question)
+                            @SafeHtml.ToMarkup(question.QuestionText)
                         </p>
                         <p class="card-text question-card-text" >
                             @SafeHtml.ToMarkup(question.Description)
@@ -159,13 +159,13 @@
 }
 
 @code{
-    private UserModel loggedUser;
+    private User loggedUser;
 
-    private List<QuestionModel> questions;
-    private List<CategoryModel> categories;
-    private List<StatusModel> statuses;
-    private QuestionModel archivingQuestion;
-    private List<AnswerModel> userAnswers;
+    private List<Question> questions;
+    private List<Category> categories;
+    private List<Status> statuses;
+    private Question archivingQuestion;
+    private List<Answer> userAnswers;
 
     private HashSet<string> selectedCategories = new HashSet<string> { "All" };
     private string selectedStatus = "All";
@@ -180,7 +180,7 @@
         loggedUser = await authProvider.GetUserFromAuth(userData);
         userAnswers = loggedUser != null
             ? await answerData.GetUserAnswers(loggedUser.Id)
-            : new List<AnswerModel>();
+            : new List<Answer>();
     }
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
@@ -193,7 +193,7 @@
         }
     }
 
-    private void AskArchive(QuestionModel question)
+    private void AskArchive(Question question)
     {
         archivingQuestion = question;
     }
@@ -258,7 +258,7 @@
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
-            output = output.Where(x => !string.IsNullOrWhiteSpace(x.Question) && x.Question.Contains(searchText, StringComparison.CurrentCultureIgnoreCase) ||
+            output = output.Where(x => !string.IsNullOrWhiteSpace(x.QuestionText) && x.QuestionText.Contains(searchText, StringComparison.CurrentCultureIgnoreCase) ||
             !string.IsNullOrWhiteSpace(x.Description) && x.Description.Contains(searchText, StringComparison.CurrentCultureIgnoreCase))
             .ToList();
         }
@@ -319,7 +319,7 @@
         await FilterQuestions();
     }
 
-    private async Task UpVote(QuestionModel question)
+    private async Task UpVote(Question question)
     {
         if (loggedUser is null)
         {
@@ -344,17 +344,17 @@
         }
     }
 
-    private string GetUpvoteTopText(QuestionModel question)
+    private string GetUpvoteTopText(Question question)
     {
         return question.UserVotes?.Count.ToString("00");
     }
 
-    private string GetUpvoteBottomText(QuestionModel question)
+    private string GetUpvoteBottomText(Question question)
     {
         return question.UserVotes?.Count > 1 ? "Upvotes" : "Upvote";
     }
 
-    private void OpenDetails(QuestionModel question)
+    private void OpenDetails(Question question)
     {
         navManager.NavigateTo($"/Details/{question.Id}");
     }
@@ -366,12 +366,12 @@
         : "";
     }
 
-    private string GetVoteClass(QuestionModel question)
+    private string GetVoteClass(Question question)
     {
         return question.UserVotes.Contains(loggedUser?.Id) ? "thumb-up-icon-clicked" : "thumb-up-icon";
     }
 
-    private string GetQuestionStatusClass(QuestionModel question)
+    private string GetQuestionStatusClass(Question question)
     {
         if (question == null || question.Status == null)
         {
@@ -405,7 +405,7 @@
         navManager.NavigateTo($"/Edit/{questionId}");
     }
 
-    private string GetAnswerMarkClass(QuestionModel questionModel)
+    private string GetAnswerMarkClass(Question questionModel)
     {
         return userAnswers?.Any(x => x.QuestionId == questionModel.Id) == true ? "answered-icon" : "";
     }

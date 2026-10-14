@@ -27,7 +27,7 @@
                         </div>
                     </div>
                     <div class="question-detail-text">
-                        <div class="fw-bold mb-2 question-detail-question">@SafeHtml.ToMarkup(question.Question)</div>
+                        <div class="fw-bold mb-2 question-detail-question">@SafeHtml.ToMarkup(question.QuestionText)</div>
                         <div class="mb-2 question-detail-autor">@question.Author.DisplayName</div>
                         <div class="mb-2">@SafeHtml.ToMarkup(question.Description)</div>
 
@@ -118,7 +118,7 @@
                 </div>
                 <input type="checkbox" class="read-more-checker" id="@($"read-more-checker-{answer.Id}")" />
                 <div class="limiter">
-                    <div class="fw-bold mb-2">@SafeHtml.ToMarkup(answer.Answer)</div>
+                    <div class="fw-bold mb-2">@SafeHtml.ToMarkup(answer.AnswerText)</div>
                     <div class="bottom"></div>
                 </div>
                 <label for="@($"read-more-checker-{answer.Id}")" class="read-more-button"></label>
@@ -218,11 +218,11 @@
     [Parameter]
     public string Id { get; set; }
 
-    private UserModel loggedUser;
-    private QuestionModel question;
+    private User loggedUser;
+    private Question question;
 
-    private List<StatusModel> statuses;
-    private List<AnswerModel> answers;
+    private List<Status> statuses;
+    private List<Answer> answers;
     private string settingStatus;
     private string urlText = "";
 
@@ -251,7 +251,7 @@
             .ToList();
     }
 
-    private async Task ApproveAnswer(AnswerModel answer)
+    private async Task ApproveAnswer(Answer answer)
     {
         answer.IsApproved = true;
         await answerData.UpdateAnswer(answer);
@@ -409,7 +409,7 @@
         if (cachedUserAns != null)
         {
             answers.Remove(cachedUserAns);
-            cachedUserAns.Answer = inputAnswer;
+            cachedUserAns.AnswerText = inputAnswer;
             cachedUserAns.CreateDate = DateTime.Now;
             answers.Add(cachedUserAns);
             await answerData.UpdateAnswer(cachedUserAns);
@@ -418,9 +418,9 @@
             return;
         }
 
-        var userAnswer = new AnswerModel()
+        var userAnswer = new Answer()
         {
-            Answer = inputAnswer,
+            AnswerText = inputAnswer,
             Author = loggedUser,
             CreateDate = DateTime.Now,
             QuestionId = question.Id
@@ -433,7 +433,7 @@
         toasterService.AddToast(Toast.CreateToastAlert("Your Answer was added", 3000));
     }
 
-    private string GetAnswerAutorName(AnswerModel answer)
+    private string GetAnswerAutorName(Answer answer)
     {
         return @answer.Author.Id != loggedUser?.Id 
         ? answer.Author.DisplayName 

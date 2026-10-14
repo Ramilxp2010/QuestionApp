@@ -12,7 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\QuestionAppLibrary\QuestionAppLibrary.csproj" />
+    <ProjectReference Include="..\QuestionAppLibrary\QuestionApp.Domain.csproj" />
+    <ProjectReference Include="..\QuestionsApp.Infrastructure.MongoDb\QuestionsApp.Infrastructure.MongoDb.csproj" />
   </ItemGroup>
 
 </Project>

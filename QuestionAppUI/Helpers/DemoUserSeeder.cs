@@ -7,14 +7,14 @@ namespace QuestionAppUI.Helpers
     {
         public const string DefaultPassword = "1234";
 
-        public static async Task EnsureDemoUsersAsync(IUserData userData, IPasswordHasher<UserModel> passwordHasher)
+        public static async Task EnsureDemoUsersAsync(IUserData userData, IPasswordHasher<User> passwordHasher)
         {
             foreach (var template in SampleData.SampleUsers)
             {
                 var existing = await userData.GetUserByIdentifier(template.ObjectIdentifier);
                 if (existing == null)
                 {
-                    var user = new UserModel
+                    var user = new User
                     {
                         ObjectIdentifier = template.ObjectIdentifier,
                         UserName = template.UserName,

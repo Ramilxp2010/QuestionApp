@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace QuestionAppLibrary.DataAccess
+namespace QuestionsApp.Infrastructure.MongoDb
 {
-    public class DbConnection : IDbConnection
+    public class DbConnection
     {
         private readonly IConfiguration _config;
         private readonly IMongoDatabase _db;
@@ -16,11 +16,11 @@ namespace QuestionAppLibrary.DataAccess
         public string AnswerCollectionName { get; private set; } = "answers";
 
         public MongoClient Client { get; private set; }
-        public IMongoCollection<CategoryModel> CategoryCollection { get; private set; }
-        public IMongoCollection<StatusModel> StatusCollection { get; private set; }
-        public IMongoCollection<UserModel> UserCollection { get; private set; }
-        public IMongoCollection<QuestionModel> QuestionCollection { get; private set; }
-        public IMongoCollection<AnswerModel> AnswerCollection { get; private set; }
+        public IMongoCollection<CategoryDocument> CategoryCollection { get; private set; }
+        public IMongoCollection<StatusDocument> StatusCollection { get; private set; }
+        public IMongoCollection<UserDocument> UserCollection { get; private set; }
+        public IMongoCollection<QuestionDocument> QuestionCollection { get; private set; }
+        public IMongoCollection<AnswerDocument> AnswerCollection { get; private set; }
 
         public DbConnection(IConfiguration config)
         {
@@ -32,11 +32,11 @@ namespace QuestionAppLibrary.DataAccess
             DbName = _config["DatabaseName"];
             _db = Client.GetDatabase(DbName);
 
-            CategoryCollection = _db.GetCollection<CategoryModel>(CategoryCollectionName);
-            StatusCollection = _db.GetCollection<StatusModel>(StatusCollectionName);
-            UserCollection = _db.GetCollection<UserModel>(UserCollectionName);
-            QuestionCollection = _db.GetCollection<QuestionModel>(QuestionCollectionName);
-            AnswerCollection = _db.GetCollection<AnswerModel>(AnswerCollectionName);
+            CategoryCollection = _db.GetCollection<CategoryDocument>(CategoryCollectionName);
+            StatusCollection = _db.GetCollection<StatusDocument>(StatusCollectionName);
+            UserCollection = _db.GetCollection<UserDocument>(UserCollectionName);
+            QuestionCollection = _db.GetCollection<QuestionDocument>(QuestionCollectionName);
+            AnswerCollection = _db.GetCollection<AnswerDocument>(AnswerCollectionName);
         }
     }
 }

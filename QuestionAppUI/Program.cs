@@ -13,7 +13,7 @@ using (var scope = app.Services.CreateScope())
     var sp = scope.ServiceProvider;
     await DemoDataSeeder.EnsureDemoDataAsync(
         sp.GetRequiredService<IUserData>(),
-        sp.GetRequiredService<IPasswordHasher<UserModel>>(),
+        sp.GetRequiredService<IPasswordHasher<User>>(),
         sp.GetRequiredService<ICategoryData>(),
         sp.GetRequiredService<IStatusData>(),
         sp.GetRequiredService<IQuestionData>(),

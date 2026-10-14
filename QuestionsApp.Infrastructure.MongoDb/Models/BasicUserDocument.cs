@@ -1,6 +1,6 @@
 ﻿namespace QuestionAppLibrary.Models
 {
-    public class BasicUserModel
+    public class BasicUserDocument
     {
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
@@ -9,12 +9,12 @@
 
         public string DisplayName { get; set; }
 
-        public BasicUserModel()
+        public BasicUserDocument()
         {
 
         }
 
-        public BasicUserModel(UserModel user)
+        public BasicUserDocument(UserDocument user)
         {
             Id = user.Id;
             ObjectId = user.ObjectIdentifier;
