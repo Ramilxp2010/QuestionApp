@@ -121,7 +121,7 @@
                 <div class="@GetSelectedStatusClass()" @onclick="(()=>OnStatusClick())">All</div>
                 @foreach (var c in statuses)
                 {
-                    <div class="@GetSelectedStatusClass(c.Name)" @onclick="(()=> OnStatusClick(c.Name))">@c.Name</div>
+                    <div class="@GetSelectedStatusClass(c.Id)" @onclick="(()=> OnStatusClick(c.Id))">@c.Name</div>
                 }
             </div>
         }

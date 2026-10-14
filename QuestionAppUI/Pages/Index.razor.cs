@@ -37,7 +37,7 @@ namespace QuestionAppUI.Pages
 
         private HashSet<string> selectedCategoriesId = new HashSet<string>();
 
-        private string selectedStatus = "All";
+        private string selectedStatusId = string.Empty;
 
         private string searchText = "";
 
@@ -92,8 +92,8 @@ namespace QuestionAppUI.Pages
             var categoriesResults = await sessionStorage.GetAsync<HashSet<string>>(nameof(selectedCategoriesId));
             selectedCategoriesId = categoriesResults.Success ? categoriesResults.Value : new HashSet<string>() {};
 
-            var stringResults = await sessionStorage.GetAsync<string>(nameof(selectedStatus));
-            selectedStatus = stringResults.Success ? stringResults.Value : "All";
+            var stringResults = await sessionStorage.GetAsync<string>(nameof(selectedStatusId));
+            selectedStatusId = stringResults.Success ? stringResults.Value : null;
 
             stringResults = await sessionStorage.GetAsync<string>(nameof(searchText));
             searchText = stringResults.Success ? stringResults.Value : "";
@@ -105,20 +105,15 @@ namespace QuestionAppUI.Pages
         private async Task SaveFilterState()
         {
             await sessionStorage.SetAsync(nameof(selectedCategoriesId), selectedCategoriesId);
-            await sessionStorage.SetAsync(nameof(selectedStatus), selectedStatus);
+            await sessionStorage.SetAsync(nameof(selectedStatusId), selectedStatusId);
             await sessionStorage.SetAsync(nameof(searchText), searchText);
             await sessionStorage.SetAsync(nameof(isSortedByNew), isSortedByNew);
         }
 
         private async Task FilterQuestions()
         {
-            var filter = new QuestionFilter(null, selectedCategoriesId, null);
+            var filter = new QuestionFilter(null, selectedCategoriesId, selectedStatusId);
             var output = await questionData.GetApprovedQuestions(filter);
-
-            if (selectedStatus != "All")
-            {
-                output = output.Where(x => x.Status?.Name == selectedStatus).ToList();
-            }
 
             if (!string.IsNullOrWhiteSpace(searchText))
             {
@@ -174,9 +169,9 @@ namespace QuestionAppUI.Pages
             await FilterQuestions();
         }
 
-        private async Task OnStatusClick(string status = "All")
+        private async Task OnStatusClick(string statusId = null)
         {
-            selectedStatus = status;
+            selectedStatusId = statusId;
             await FilterQuestions();
         }
 
@@ -259,9 +254,9 @@ namespace QuestionAppUI.Pages
             return selectedCategoriesId.Any(x => x == categoryId) ? "selected-category" : "";
         }
 
-        private string GetSelectedStatusClass(string status = "All")
+        private string GetSelectedStatusClass(string statusId = null)
         {
-            return status == selectedStatus ? "selected-status" : "";
+            return (statusId == null && selectedStatusId == null) || statusId == selectedStatusId ? "selected-status" : "";
         }
 
         private void GoToEdit(string questionId)
