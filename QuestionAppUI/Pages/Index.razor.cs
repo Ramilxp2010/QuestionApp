@@ -248,15 +248,20 @@ namespace QuestionAppUI.Pages
 
         private string GetSelectedCategiryClass(string categoryId = null)
         {
-            if (string.IsNullOrWhiteSpace(categoryId) && !selectedCategoriesId.Any())
-                return "selected-category";
-
-            return selectedCategoriesId.Any(x => x == categoryId) ? "selected-category" : "";
+            return 
+                (string.IsNullOrWhiteSpace(categoryId) && !selectedCategoriesId.Any()) 
+                || selectedCategoriesId.Any(x => x == categoryId) 
+                ? "selected-category" 
+                : "";
         }
 
         private string GetSelectedStatusClass(string statusId = null)
         {
-            return (statusId == null && selectedStatusId == null) || statusId == selectedStatusId ? "selected-status" : "";
+            return 
+                (statusId == null && selectedStatusId == null) 
+                || statusId == selectedStatusId 
+                ? "selected-status" 
+                : "";
         }
 
         private void GoToEdit(string questionId)

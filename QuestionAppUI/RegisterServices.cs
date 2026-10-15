@@ -44,15 +44,11 @@ namespace QuestionAppUI
             builder.Services.AddAuthorization();
             builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 
-            builder.Services.AddSingleton<DbConnection>();
-            builder.Services.AddSingleton<ICategoryData, MongoCategoryData>();
-            builder.Services.AddSingleton<IStatusData, MongoStatusData>();
-            builder.Services.AddSingleton<IUserData, MongoUserData>();
-            builder.Services.AddSingleton<IQuestionData, MongoQuestionData>();
-            builder.Services.AddSingleton<IAnswerData, MongoAnswerData>();
             builder.Services.AddSingleton<ToasterService>();
 
             builder.Services.AddRadzenComponents();
+
+
         }
     }
 }

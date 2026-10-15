@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 using QuestionAppUI;
-using QuestionAppUI.Helpers;
+using QuestionsApp.Infrastructure.MongoDb.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.ConfigureServices();
+
+builder.AddQuestionAppMongoDb();
 
 var app = builder.Build();
 
