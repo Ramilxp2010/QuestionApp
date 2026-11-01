@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
-using QuestionAppUI.Data;
+using QuestionApp.Application.DataGenerator.Data;
+using QuestionAppLibrary.DataAccess;
+using QuestionAppLibrary.Models;
 
-namespace QuestionAppUI.Helpers
+namespace QuestionApp.Application.DataGenerator
 {
     public static class DemoUserSeeder
     {

@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\QuestionAppLibrary\QuestionApp.Domain.csproj" />
+    <ProjectReference Include="..\QuestionApp.Application\QuestionApp.Application.csproj" />
   </ItemGroup>
 
 </Project>

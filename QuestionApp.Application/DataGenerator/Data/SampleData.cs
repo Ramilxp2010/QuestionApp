@@ -1,6 +1,6 @@
-﻿using QuestionAppUI.Models;
+﻿using QuestionAppLibrary.Models;
 
-namespace QuestionAppUI.Data
+namespace QuestionApp.Application.DataGenerator.Data
 {
     public static class SampleData
     {
@@ -37,63 +37,63 @@ namespace QuestionAppUI.Data
             new Status { Name = "dismissed", Description = "dismissed"}
         };
 
-        public static List<Question> SampleQuestions = new List<Question>
+        public static List<QuestionAppLibrary.Models.Question> SampleQuestions = new List<QuestionAppLibrary.Models.Question>
         {
-            new Question
+            new QuestionAppLibrary.Models.Question
             {
                 QuestionText = "Для чего нужен оператор checked?",
                 Answer = "При применении к операции преобразования типов оператор checked позволяет сгенерировать исключение при переполнении разрядности типа.",
                 DateCreated = DateTime.Now,
-                Categories = new List<Category> { SampleCategories.FirstOrDefault(x => x.Name == "C#"), SampleCategories.FirstOrDefault(x => x.Name == ".NET/Core") },
+                Categories = new List<Category> { SampleCategories.FirstOrDefault(x => x.Name == "C#")!, SampleCategories.FirstOrDefault(x => x.Name == ".NET/Core")! },
                 Author = new BasicUser(SampleUsers[0]),
                 IsApproved = true,
             },
-            new Question
+            new QuestionAppLibrary.Models.Question
             {
                 QuestionText = "Что такое .NET framework ?",
                 Answer = ".NET Framework - это программная платформа, разработанная корпорацией Microsoft, предназначенная для создания и выполнения приложений под Windows. Она была введена в 2002 году и стала одной из основных платформ для разработки приложений для операционных систем Windows.",
                 DateCreated = DateTime.Now,
-                Categories = new List<Category> {SampleCategories.FirstOrDefault(x => x.Name == ".NET/Core") },
+                Categories = new List<Category> {SampleCategories.FirstOrDefault(x => x.Name == ".NET/Core")! },
                 Author = new BasicUser(SampleUsers[0]),
                 IsApproved = true,
             },
-            new Question
+            new QuestionAppLibrary.Models.Question
             {
                 QuestionText = "Что такое Value Type и Reference Type? Назовите различия между ними.",
                 Answer = "В языках программирования, включая C#, C++, Java и другие, данные переменные могут быть разделены на две основные категории: типы значений (Value Types) и ссылочные типы (Reference Types). Эти категории определяют, как данные хранятся в памяти и как работает присваивание переменных.",
                 DateCreated = DateTime.Now,
                 Categories = new List < Category > 
                 { 
-                    SampleCategories.FirstOrDefault(x => x.Name == "C#"), 
-                    SampleCategories.FirstOrDefault(x => x.Name == "ООП") ,
-                    SampleCategories.FirstOrDefault(x => x.Name == "Тестирование") },
+                    SampleCategories.FirstOrDefault(x => x.Name == "C#")!, 
+                    SampleCategories.FirstOrDefault(x => x.Name == "ООП")! ,
+                    SampleCategories.FirstOrDefault(x => x.Name == "Тестирование")! },
                 Author = new BasicUser(SampleUsers[0]),
                 IsApproved = true,
             },
-            new Question
+            new QuestionAppLibrary.Models.Question
             {
                 QuestionText = "Ваше понимание упаковки (Boxing) и распаковки (Unboxing).",
                 Answer = "Ссылочные типы в языке C# определяются с помощью ключевого слова class. ссылочные типы – это все типы, кроме прямых или косвенных потомков System.ValueType. Массивы интерфейсы и делегаты – это тоже ссылочные тип. Типы-значения в языке C# – это типы, определённые с помощью ключевых слов struct, enum, а также все фундаментальные кроме string. Переменные ссылочных типов содержат адреса объектов, а переменные типов-значений содержат сами объекты. ",
                 DateCreated = DateTime.Now,
-                Categories = new List<Category> {SampleCategories.FirstOrDefault(x => x.Name == "C#") },
+                Categories = new List<Category> {SampleCategories.FirstOrDefault(x => x.Name == "C#")! },
                 Author = new BasicUser(SampleUsers[0]),
                 IsApproved = true,
             },
-            new Question
+            new QuestionAppLibrary.Models.Question
             {
                 QuestionText = "Может ли значение типа DateTime принимать значение null?",
                 Answer = "Нет, если только не DateTime?",
                 DateCreated = DateTime.Now,
-                Categories = new List < Category > { SampleCategories.FirstOrDefault(x => x.Name == "C#") },
+                Categories = new List < Category > { SampleCategories.FirstOrDefault(x => x.Name == "C#")! },
                 Author = new BasicUser(SampleUsers[0]),
                 IsApproved = true,
             },
-            new Question
+            new QuestionAppLibrary.Models.Question
             {
                 QuestionText = "Ваше понимание работы класса StringBuilder. Есть ли преимущество перед использованием String?",
                 Answer = "да это динамическая строка и при изменении её элемента меняется только он, а не занова создается объект как в случае со String",
                 DateCreated = DateTime.Now,
-                Categories = new List < Category > { SampleCategories.FirstOrDefault(x => x.Name == "C#") },
+                Categories = new List < Category > { SampleCategories.FirstOrDefault(x => x.Name == "C#")! },
                 Author = new BasicUser(SampleUsers[0]),
                 IsApproved = true,
             },

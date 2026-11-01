@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using QuestionApp.Application.DataGenerator;
 using QuestionAppLibrary.DataAccess;
 using QuestionsApp.Infrastructure.MongoDb.DataAccess;
 using QuestionsApp.Infrastructure.MongoDb.Init;
@@ -33,6 +34,7 @@ namespace QuestionsApp.Infrastructure.MongoDb.Extensions
             builder.Services.AddSingleton<IUserData, MongoUserData>();
             builder.Services.AddSingleton<IQuestionData, MongoQuestionData>();
             builder.Services.AddSingleton<IAnswerData, MongoAnswerData>();
+            builder.Services.AddSingleton<ISeedDataStore, MongoSeedDataStore>();
         }
     }
 }

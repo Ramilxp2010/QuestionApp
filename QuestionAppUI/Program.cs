@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using QuestionApp.Application.DataGenerator.Options;
 using QuestionAppUI;
 using QuestionsApp.Infrastructure.MongoDb.Extensions;
 
@@ -13,13 +14,28 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var sp = scope.ServiceProvider;
-    await DemoDataSeeder.EnsureDemoDataAsync(
-        sp.GetRequiredService<IUserData>(),
-        sp.GetRequiredService<IPasswordHasher<User>>(),
-        sp.GetRequiredService<ICategoryData>(),
-        sp.GetRequiredService<IStatusData>(),
-        sp.GetRequiredService<IQuestionData>(),
-        sp.GetRequiredService<IAnswerData>());
+    var testDataSection = app.Configuration.GetSection("TestData");
+
+    // Генератор тестовых данных: только в Development и только при TestData:Enabled = true.
+    // Заполняет базу, только если она полностью пустая.
+    if (app.Environment.IsDevelopment() && testDataSection.GetValue<bool>("Enabled"))
+    {
+        await TestDataSeeder.EnsureTestDataAsync(
+            sp.GetRequiredService<ISeedDataStore>(),
+            sp.GetRequiredService<IPasswordHasher<User>>(),
+            testDataSection.Get<SeedOptions>() ?? new SeedOptions(),
+            sp.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(TestDataSeeder)));
+    }
+    else
+    {
+        await DemoDataSeeder.EnsureDemoDataAsync(
+            sp.GetRequiredService<IUserData>(),
+            sp.GetRequiredService<IPasswordHasher<User>>(),
+            sp.GetRequiredService<ICategoryData>(),
+            sp.GetRequiredService<IStatusData>(),
+            sp.GetRequiredService<IQuestionData>(),
+            sp.GetRequiredService<IAnswerData>());
+    }
 }
 
 // Configure the HTTP request pipeline.
